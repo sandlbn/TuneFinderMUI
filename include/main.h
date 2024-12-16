@@ -4,6 +4,7 @@
 #include <exec/types.h>
 #include <intuition/intuition.h>
 #include <libraries/mui.h>
+#include "locale.h"
 
 #define HOOKFUNC LONG (*)(struct Hook *, APTR, APTR)
 
@@ -11,6 +12,13 @@
 #define MAKE_ID(a, b, c, d) \
   ((ULONG)(a) << 24 | (ULONG)(b) << 16 | (ULONG)(c) << 8 | (ULONG)(d))
 #endif
+
+#ifdef DEBUG_BUILD
+    #define DEBUG(msg, ...) printf("DEBUG [%s:%d]: " msg "\n", __func__, __LINE__, ##__VA_ARGS__)
+#else
+    #define DEBUG(msg, ...) ((void)0)  // Does nothing in release build
+#endif
+
 
 // MUI helper macros
 #define MakeMenuBar() MenuitemObject, MUIA_Menuitem_Title, "", End
@@ -68,7 +76,8 @@ enum EVENT_IDS {
   EVENT_TUNE_DBLCLICK,
   EVENT_TUNE_PLAY,
   EVENT_TUNE_STOP,
-  EVENT_TUNE_SAVE
+  EVENT_TUNE_SAVE,
+  EVENT_SETTINGS_BROWSE_AMIGAAMP
 };
 
 // Structures
@@ -99,7 +108,8 @@ struct ObjApp {
   APTR MN_Tune_Play;
   APTR MN_Tune_Stop;
   APTR MN_Tune_Save;
-
+  APTR BTN_Fav_Add;
+  APTR BTN_Fav_Remove;
   APTR BTN_Find;
   APTR BTN_Quit;
   APTR BTN_Save;
@@ -129,6 +139,11 @@ struct ObjApp {
   APTR BTN_Settings_API_Limit_Spc;
   APTR BTN_Settings_Save;
   APTR BTN_Settings_Cancel;
+  APTR BTN_Settings_AmigaAmp_Browse;
+  APTR STR_Settings_AmigaAmp;   // String for AmigaAmp path
+  APTR CHK_Settings_Iconify;     // Checkbox for iconify option
+  
+
 };
 
 // Function prototypes

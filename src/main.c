@@ -5,6 +5,9 @@
 #include <libraries/mui.h>
 #include <proto/dos.h>
 #include <proto/exec.h>
+#include <libraries/asl.h>
+#include <clib/asl_protos.h>
+#include <proto/asl.h>
 #include <proto/intuition.h>
 #include <proto/muimaster.h>
 #include <stdio.h>
@@ -19,7 +22,7 @@ static CONST_STRPTR Codecs[32];
 static CONST_STRPTR Countries[32];
 struct ObjApp *objApp;
 struct Library *MUIMasterBase;
-
+struct Library *AslBase;
 // Static test data
 struct Tune tune1;
 struct Tune tune2;
@@ -30,24 +33,71 @@ struct Tune tune4;
 extern struct GfxBase *GfxBase;
 extern struct IntuitionBase *IntuitionBase;
 
+static BOOL InitLibs(void)
+{
+    if (!(IntuitionBase = (struct IntuitionBase *)OpenLibrary("intuition.library", 39)))
+        return FALSE;
+
+    if (!(GfxBase = (struct GfxBase *)OpenLibrary("graphics.library", 0))) {
+        CloseLibrary((struct Library *)IntuitionBase);
+        return FALSE;
+    }
+
+    if (!(MUIMasterBase = OpenLibrary(MUIMASTER_NAME, 19))) {
+        CloseLibrary((struct Library *)GfxBase);
+        CloseLibrary((struct Library *)IntuitionBase);
+        return FALSE;
+    }
+
+    if (!(AslBase = OpenLibrary("asl.library", 37))) {
+        CloseLibrary(MUIMasterBase);
+        CloseLibrary((struct Library *)GfxBase);
+        CloseLibrary((struct Library *)IntuitionBase);
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+static void CleanupLibs(void)
+{
+    if (AslBase) CloseLibrary(AslBase);
+    if (MUIMasterBase) CloseLibrary(MUIMasterBase);
+    if (GfxBase) CloseLibrary((struct Library *)GfxBase);
+    if (IntuitionBase) CloseLibrary((struct Library *)IntuitionBase);
+}
 // Function implementations
-BOOL APP_About(void) {
-  PutStr("APP_About()\n");
+BOOL APP_About(void)
+{
+    PutStr("APP_About()\n");
+    
+    // Create the about text with proper translations
+    static char aboutText[512];
+    // Using special formatting to keep the layout nice
+    sprintf(aboutText,
+        "\33c"                     // Center alignment
+        "\0338%s %s (%s)\n\n"     // Title, version, date in bold
+        "\0332%s\n"               // Description
+        "\0332%s\n\n"             // Author line
+        "%s\n\n"                  // Copyright
+        "%s",                     // MUI line
+        GetTFString(MSG_STATE_ABOUT),  // "About"
+        APP_VERSION,
+        APP_DATE,
+        APP_DESCRIPTION,
+        APP_AUTHORS,
+        APP_COPYRIGHT,
+        "This is a MUI-Application.\nMUI is copyrighted by Stefan Stuntz.");
 
-  MUI_RequestA(objApp->App, objApp->WIN_Main, 0, NULL, "Continue",
-               "\33c"
-               "\0338" APP_NAME " " APP_VERSION " (" APP_DATE
-               ")"
-               "\n\n"
-               "\0332" APP_DESCRIPTION
-               "\n"
-               "\0332Written by " APP_AUTHORS "\n\n" APP_COPYRIGHT
-               "\n\n"
-               "This is a MUI-Application.\n"
-               "MUI is copyrighted by Stefan Stuntz.",
-               NULL);
-
-  return TRUE;
+    MUI_RequestA(objApp->App, 
+                objApp->WIN_Main, 
+                0, 
+                NULL,
+                GetTFString(MSG_ACTION_CANCEL),  // "Continue" button
+                aboutText,
+                NULL);
+    
+    return TRUE;
 }
 
 BOOL APP_About_MUI(void) {
@@ -66,7 +116,7 @@ BOOL APP_Find_Init(void) {
   PutStr("APP_Find_Init()\n");
 
   // Initialize Codecs array
-  Codecs[0] = "ALL";
+  Codecs[0] = GetTFString(MSG_GUI_UNKNOWN);
   Codecs[1] = "AAC";
   Codecs[2] = "MP3";
   Codecs[3] = "OGG";
@@ -74,7 +124,7 @@ BOOL APP_Find_Init(void) {
   Codecs[5] = NULL;
 
   // Initialize Countries array
-  Countries[0] = "ALL";
+  Countries[0] = GetTFString(MSG_GUI_UNKNOWN);
   Countries[1] = "AT - Austria";
   Countries[2] = "CA - Canada";
   Countries[3] = "CZ - Czech";
@@ -99,6 +149,8 @@ BOOL APP_Find_Init(void) {
   set(objApp->CYC_Find_Country, MUIA_Cycle_Active, 13);
   set(objApp->CHK_Find_HTTPS_Only, MUIA_Selected, FALSE);
   set(objApp->CHK_Find_Hide_Broken, MUIA_Selected, TRUE);
+    set(objApp->LAB_Tune_Result, MUIA_Text_Contents, 
+        GetTFString(MSG_STATE_READY));  // "Ready"
 
   return TRUE;
 }
@@ -142,10 +194,14 @@ DoMethod(objApp->LSV_Tune_List, MUIM_List_InsertSingle, &tune2, MUIV_List_Insert
 
   // Update result count
   get(objApp->LSV_Tune_List, MUIA_List_Entries, &numEntries);
-  sprintf(buf, "Found %lu tune(s), in 0.8 second(s) [Limit: %lu].", numEntries,
-          API_LIMIT_DEFAULT);
-  set(objApp->LAB_Tune_Result, MUIA_Text_Contents, buf);
 
+  if (numEntries > 0) {
+        GetTFFormattedString(buf, sizeof(buf), MSG_STATUS_SEARCH_COMPLETE, numEntries);  // "Search completed. Found %d tunes."
+  } else {
+        strcpy(buf, GetTFString(MSG_STATUS_NO_STATIONS));  // "No tunes."
+  }
+
+  set(objApp->LAB_Tune_Result, MUIA_Text_Contents, buf);
   set(objApp->LSV_Tune_List, MUIA_List_Active, MUIV_List_Active_Top);
 
   return TRUE;
@@ -154,7 +210,14 @@ DoMethod(objApp->LSV_Tune_List, MUIM_List_InsertSingle, &tune2, MUIV_List_Insert
 int main(void) {
   int result = RETURN_FAIL;
 
-  if ((MUIMasterBase = OpenLibrary(MUIMASTER_NAME, 19))) {
+    if (!InitLocaleSystem()) {
+        PutStr("Warning: Failed to initialize locale system\n");
+        // Continue anyway, will use built-in strings
+    }
+    if (!InitLibs()) {
+        return 20;
+
+    }
     if ((objApp = CreateApp())) {
       BOOL running = TRUE;
 
@@ -236,6 +299,7 @@ int main(void) {
               APP_Settings_API_Limit_Inc();
               break;
             case EVENT_SETTINGS_API_LIMIT_DEC:
+            PutStr("DDDDDDD");
               APP_Settings_API_Limit_Dec();
               break;
             case EVENT_SETTINGS_SAVE:
@@ -243,7 +307,35 @@ int main(void) {
               break;
             case EVENT_SETTINGS_CANCEL:
               APP_Settings_Cancel();
-              break;
+              break;  
+            case EVENT_SETTINGS_BROWSE_AMIGAAMP: {
+    struct FileRequester *req;
+    char path[256];
+                  PutStr("ASL up...\n");
+
+    if (AslBase)
+    {
+
+        req = AllocAslRequestTags(ASL_FileRequest,
+            ASLFR_TitleText, "Select AmigaAmp executable",
+            ASLFR_DoPatterns, TRUE,
+            ASLFR_InitialPattern, "#?",
+            TAG_DONE);
+        
+        if (req)
+        {
+            if (AslRequest(req, NULL))
+            {
+                strcpy(path, req->fr_Drawer);
+                AddPart(path, req->fr_File, sizeof(path));
+                set(objApp->STR_Settings_AmigaAmp, MUIA_String_Contents, path);
+            }
+            FreeAslRequest(req);
+        }
+    }
+}
+    
+            break;
 
             case MUIV_Application_ReturnID_Quit:
               running = FALSE;
@@ -262,10 +354,8 @@ int main(void) {
       PutStr("Failed to create application!\n");
     }
 
-    CloseLibrary(MUIMasterBase);
-  } else {
-    PutStr("Failed to open MUIMaster library!\n");
-  }
-
+CleanupLibs();
+ CleanupLocaleSystem();
   return result;
 }
+

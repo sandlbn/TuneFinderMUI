@@ -18,6 +18,8 @@
 
 #include "../include/app.h"
 #include "../include/main.h"
+#include "../include/locale.h"
+
 #include "SDI_compiler.h"
 #include "SDI_hook.h"
 #include "SDI_lib.h"
@@ -56,34 +58,46 @@ void CreateMenu(struct ObjApp *obj) {
   APTR menu1, menu2;
 
   // Create menu items
-  obj->MN_Project_Find = MakeMenuItem("Find Tunes...", "F");
-  obj->MN_Project_Save = MakeMenuItem("Save Tunes...", "S");
-  obj->MN_Project_About = MakeMenuItem("About...", "?");
-  obj->MN_Project_About_MUI = MakeMenuItem("About MUI...", NULL);
-  obj->MN_Project_Settings = MakeMenuItem("Settings...", NULL);
-  obj->MN_Project_Settings_MUI = MakeMenuItem("Settings MUI...", NULL);
-  obj->MN_Project_Iconify = MakeMenuItem("Iconify", "I");
-  obj->MN_Project_Quit = MakeMenuItem("Quit", "Q");
+    obj->MN_Project_Find = MakeMenuItem(GetTFString(MSG_ACTION_SEARCH), "F");        // "Find Tunes"
+    obj->MN_Project_Save = MakeMenuItem(GetTFString(MSG_ACTION_SAVE_ALL), "S");      // "Save Tunes"
+    obj->MN_Project_About = MakeMenuItem(GetTFString(MSG_STATE_ABOUT), "?");         // "About"
+    obj->MN_Project_About_MUI = MakeMenuItem("About MUI...", NULL);                  // Keep MUI specific text
+    obj->MN_Project_Settings = MakeMenuItem(GetTFString(MSG_STATE_SETTINGS), NULL);  // "Settings..."
+    obj->MN_Project_Settings_MUI = MakeMenuItem("Settings MUI...", NULL);           // Keep MUI specific text
+    obj->MN_Project_Iconify = MakeMenuItem(GetTFString(MSG_STATE_ICONIFY), "I");    // "Iconify"
+    obj->MN_Project_Quit = MakeMenuItem(GetTFString(MSG_ACTION_QUIT), "Q");         // "Quit"
+    
+    obj->MN_Tune_Play = MakeMenuItem(GetTFString(MSG_ACTION_PLAY), "P");     // "Play Tune"
+    obj->MN_Tune_Stop = MakeMenuItem(GetTFString(MSG_ACTION_STOP), "T");     // "Stop Tune"
+    obj->MN_Tune_Save = MakeMenuItem(GetTFString(MSG_ACTION_SAVE_ONE), NULL); // "Save Tune"
 
-  obj->MN_Tune_Play = MakeMenuItem("Play Tune", "P");
-  obj->MN_Tune_Stop = MakeMenuItem("Stop Tune", "T");
-  obj->MN_Tune_Save = MakeMenuItem("Save Tune", NULL);
 
   // Create Project menu
-  menu1 = MenuitemObject, MUIA_Menuitem_Title, "Project", MUIA_Family_Child,
-  obj->MN_Project_Find, MUIA_Family_Child, obj->MN_Project_Save,
-  MUIA_Family_Child, MakeMenuBar(), MUIA_Family_Child, obj->MN_Project_About,
-  MUIA_Family_Child, obj->MN_Project_About_MUI, MUIA_Family_Child,
-  MakeMenuBar(), MUIA_Family_Child, obj->MN_Project_Settings, MUIA_Family_Child,
-  obj->MN_Project_Settings_MUI, MUIA_Family_Child, MakeMenuBar(),
-  MUIA_Family_Child, obj->MN_Project_Iconify, MUIA_Family_Child, MakeMenuBar(),
-  MUIA_Family_Child, obj->MN_Project_Quit, End;
+    menu1 = MenuitemObject,
+        MUIA_Menuitem_Title, GetTFString(MSG_STATE_PROJECT),  // "Project"
+        MUIA_Family_Child, obj->MN_Project_Find,
+        MUIA_Family_Child, obj->MN_Project_Save,
+        MUIA_Family_Child, MakeMenuBar(),
+        MUIA_Family_Child, obj->MN_Project_About,
+        MUIA_Family_Child, obj->MN_Project_About_MUI,
+        MUIA_Family_Child, MakeMenuBar(),
+        MUIA_Family_Child, obj->MN_Project_Settings,
+        MUIA_Family_Child, obj->MN_Project_Settings_MUI,
+        MUIA_Family_Child, MakeMenuBar(),
+        MUIA_Family_Child, obj->MN_Project_Iconify,
+        MUIA_Family_Child, MakeMenuBar(),
+        MUIA_Family_Child, obj->MN_Project_Quit,
+    End;
+
 
   // Create Tune menu
-  menu2 = MenuitemObject, MUIA_Menuitem_Title, "Tune", MUIA_Family_Child,
-  obj->MN_Tune_Play, MUIA_Family_Child, obj->MN_Tune_Stop, MUIA_Family_Child,
-  MakeMenuBar(), MUIA_Family_Child, obj->MN_Tune_Save, End;
-
+    menu2 = MenuitemObject,
+        MUIA_Menuitem_Title, GetTFString(MSG_STATE_STATION_DETAILS),  // "Tune Details"
+        MUIA_Family_Child, obj->MN_Tune_Play,
+        MUIA_Family_Child, obj->MN_Tune_Stop,
+        MUIA_Family_Child, MakeMenuBar(),
+        MUIA_Family_Child, obj->MN_Tune_Save,
+    End;
   // Create menu strip
   obj->MN_Main = MenustripObject, MUIA_Family_Child, menu1, MUIA_Family_Child,
   menu2, End;
@@ -215,22 +229,36 @@ BOOL APP_Tune_Active(void) {
   return TRUE;
 }
 
-BOOL APP_Tune_Stop(void) {
-  PutStr("APP_Tune_Stop()\n");
-  return TRUE;
+
+BOOL APP_Tune_Save(void)
+{
+    LONG index;
+    static char buf[128];
+    struct Tune *tune = NULL;
+    
+    PutStr("APP_Tune_Save()\n");
+    get(objApp->LSV_Tune_List, MUIA_List_Active, &index);
+    
+    if (index != MUIV_List_Active_Off)
+    {
+        DoMethod(objApp->LSV_Tune_List, MUIM_List_GetEntry, index, &tune);
+        if (tune)
+        {
+            // Create save message with tune name
+            GetTFFormattedString(buf, sizeof(buf), MSG_STATUS_FILE_SAVED, tune->tu_Name);
+            set(objApp->LAB_Tune_Result, MUIA_Text_Contents, buf);
+        }
+        else
+        {
+            // Show error message
+            set(objApp->LAB_Tune_Result, MUIA_Text_Contents, 
+                GetTFString(MSG_ERR_SAVE_FILE));
+        }
+    }
+    
+    return TRUE;
 }
 
-BOOL APP_Tune_Save(void) {
-  LONG index;
-  static char buf[128];
-
-  PutStr("APP_Tune_Save()\n");
-  get(objApp->LSV_Tune_List, MUIA_List_Active, &index);
-  sprintf(buf, "Save index: %ld\n", index);
-  PutStr(buf);
-
-  return TRUE;
-}
 
 BOOL APP_Tune_DblClick(void) {
   LONG index;
@@ -250,16 +278,44 @@ BOOL APP_Iconify(void) {
   return TRUE;
 }
 
-BOOL APP_Tune_Play(void) {
-  LONG index;
-  static char buf[128];
+BOOL APP_Tune_Play(void)
+{
+    LONG index;
+    static char buf[128];
+    struct Tune *tune = NULL;
+    
+    PutStr("APP_Tune_Play()\n");
+    get(objApp->LSV_Tune_List, MUIA_List_Active, &index);
+    
+    if (index != MUIV_List_Active_Off)
+    {
+        DoMethod(objApp->LSV_Tune_List, MUIM_List_GetEntry, index, &tune);
+        if (tune)
+        {
+            // Show "Playing: [tune name]" message
+            GetTFFormattedString(buf, sizeof(buf), MSG_STATUS_PLAYING, tune->tu_Name);
+            set(objApp->LAB_Tune_Result, MUIA_Text_Contents, buf);
+        }
+        else
+        {
+            // Show error message
+            set(objApp->LAB_Tune_Result, MUIA_Text_Contents, 
+                GetTFString(MSG_ERR_START_PLAYBACK));
+        }
+    }
+    
+    return TRUE;
+}
 
-  PutStr("APP_Tune_Play()\n");
-  get(objApp->LSV_Tune_List, MUIA_List_Active, &index);
-  sprintf(buf, "Play index: %ld\n", index);
-  PutStr(buf);
-
-  return TRUE;
+BOOL APP_Tune_Stop(void)
+{
+    PutStr("APP_Tune_Stop()\n");
+    
+    // Show "Playback stopped" message
+    set(objApp->LAB_Tune_Result, MUIA_Text_Contents, 
+        GetTFString(MSG_ERR_PLAYBACK_STOPPED));
+    
+    return TRUE;
 }
 
 BOOL APP_Settings_API_Port_Dec(void) {
@@ -274,10 +330,18 @@ BOOL APP_Settings_API_Port_Dec(void) {
   return TRUE;
 }
 
-BOOL APP_Settings_Cancel(void) {
-  PutStr("APP_Settings_Cancel()\n");
-  set(objApp->WIN_Settings, MUIA_Window_Open, FALSE);
-  return TRUE;
+BOOL APP_Settings_Cancel(void)
+{
+    PutStr("APP_Settings_Cancel()\n");
+    
+    // Could show a message that settings were not saved
+    set(objApp->LAB_Tune_Result, MUIA_Text_Contents, 
+        GetTFString(MSG_ACTION_CANCEL));  // "Cancel"
+    
+    // Close settings window
+    set(objApp->WIN_Settings, MUIA_Window_Open, FALSE);
+    
+    return TRUE;
 }
 
 BOOL APP_Settings_Save(void) {
@@ -291,9 +355,10 @@ BOOL APP_Settings_Save(void) {
   get(objApp->STR_Settings_API_Port, MUIA_String_Integer, &apiPort);
   get(objApp->STR_Settings_API_Limit, MUIA_String_Integer, &apiLimit);
 
-  sprintf(buf, "Saving settings:\n- Host: %s\n- Port: %lu\n- Limit: %lu\n",
-          apiHost, apiPort, apiLimit);
-  PutStr(buf);
+  GetTFFormattedString(buf, sizeof(buf), MSG_STATUS_SETTINGS_SAVED_HOST, 
+                        apiHost, apiPort);
+  DEBUG("%s", buf);
+
 
   set(objApp->WIN_Settings, MUIA_Window_Open, FALSE);
 
@@ -312,10 +377,15 @@ BOOL APP_Settings_API_Limit_Dec(void) {
   return TRUE;
 }
 
-BOOL APP_Settings_MUI(void) {
-  PutStr("APP_Settings_MUI()\n");
-  DoMethod(objApp->App, MUIM_Application_OpenConfigWindow, 0);
-  return TRUE;
+BOOL APP_Settings_MUI(void)
+{
+    PutStr("APP_Settings_MUI()\n");
+    
+    // Open MUI settings window
+    DoMethod(objApp->App, MUIM_Application_OpenConfigWindow, 0,
+        APP_ID_WIN_SETTINGS_MUI);
+    
+    return TRUE;
 }
 
 BOOL APP_Settings_API_Port_Inc(void) {
@@ -330,15 +400,29 @@ BOOL APP_Settings_API_Port_Inc(void) {
   return TRUE;
 }
 
-BOOL APP_Save(void) {
-  PutStr("APP_Save()\n");
-  return TRUE;
+BOOL APP_Save(void)
+{
+    PutStr("APP_Save()\n");
+    
+    // Assuming we're saving all tunes
+    set(objApp->LAB_Tune_Result, MUIA_Text_Contents, 
+        GetTFString(MSG_STATUS_SETTINGS_SAVED));  // "Settings saved."
+    
+    return TRUE;
 }
 
-BOOL APP_Settings(void) {
-  PutStr("APP_Settings()\n");
-  set(objApp->WIN_Settings, MUIA_Window_Open, TRUE);
-  return TRUE;
+BOOL APP_Settings(void)
+{
+    PutStr("APP_Settings()\n");
+    
+    // Before opening settings window, we could show a status message
+    set(objApp->LAB_Tune_Result, MUIA_Text_Contents, 
+        GetTFString(MSG_STATE_SETTINGS));  // "Settings..."
+    
+    // Open settings window
+    set(objApp->WIN_Settings, MUIA_Window_Open, TRUE);
+    
+    return TRUE;
 }
 
 VOID CreateWindowMain(struct ObjApp *obj) {
@@ -346,21 +430,24 @@ VOID CreateWindowMain(struct ObjApp *obj) {
 
   // Controls
 
-  obj->BTN_Find = SimpleButton("_Find Tunes");
-  obj->BTN_Save = SimpleButton("_Save Tunes");
-  obj->BTN_Quit = SimpleButton("_Quit");
-  obj->BTN_Tune_Play = SimpleButton("_Play Tune");
-  obj->BTN_Tune_Stop = SimpleButton("St_op Tune");
-  obj->BTN_Tune_Save = SimpleButton("Sa_ve Tune");
+  obj->BTN_Find = SimpleButton(GetTFString(MSG_ACTION_SEARCH));
+  obj->BTN_Fav_Add = SimpleButton(GetTFString(MSG_ACTION_FAV_ADD)),
+  obj->BTN_Fav_Remove = SimpleButton(GetTFString(MSG_ACTION_FAV_REMOVE)),
+  obj->BTN_Save = SimpleButton(GetTFString(MSG_ACTION_SAVE_ALL));   // "Save Tunes"
+  obj->BTN_Quit = SimpleButton(GetTFString(MSG_ACTION_QUIT));       // "Quit"
+  obj->BTN_Tune_Play = SimpleButton(GetTFString(MSG_ACTION_PLAY));  // "Play Tune"
+  obj->BTN_Tune_Stop = SimpleButton(GetTFString(MSG_ACTION_STOP));  // "Stop Tune"
+  obj->BTN_Tune_Save = SimpleButton(GetTFString(MSG_ACTION_SAVE_ONE)); // "Save Tune"
   obj->STR_Find_Name = StringObject, MUIA_Frame, MUIV_Frame_String, End;
   obj->STR_Find_Tags = StringObject, MUIA_Frame, MUIV_Frame_String, End;
   obj->CYC_Find_Country = CycleObject, MUIA_Frame, MUIV_Frame_Button, End;
   obj->CYC_Find_Codec = CycleObject, MUIA_Frame, MUIV_Frame_Button, End;
   obj->CHK_Find_HTTPS_Only = CheckMark(FALSE);
   obj->CHK_Find_Hide_Broken = CheckMark(FALSE);
+    
+  lbl1 = Label2(GetTFString(MSG_OPTION_HTTPS_ONLY));    // "HTTPS Only"
+  lbl2 = Label2(GetTFString(MSG_OPTION_HIDE_BROKEN));   // "Hide Broken"
 
-  lbl1 = Label2("HTTPS Only");
-  lbl2 = Label2("Hide Broken");
 
   set(obj->BTN_Tune_Play, MUIA_Weight, 25);
   set(obj->BTN_Tune_Stop, MUIA_Weight, 25);
@@ -384,8 +471,6 @@ VOID CreateWindowMain(struct ObjApp *obj) {
   MUIV_Listview_DragType_None, MUIA_Listview_MultiSelect,
   MUIV_Listview_MultiSelect_None, MUIA_Listview_ScrollerPos,
   MUIV_Listview_ScrollerPos_Default, 
-  MUIA_List_ConstructHook, MUIV_List_ConstructHook_String,
-  MUIA_List_DestructHook, MUIV_List_DestructHook_String,
   MUIA_Listview_List, obj->LSV_Tune_List,
   End;
 
@@ -419,13 +504,11 @@ VOID CreateWindowMain(struct ObjApp *obj) {
   MUIA_Group_SameWidth, TRUE, Child, obj->LSV_Tune_List = ListviewObject,
   MUIA_Listview_List, ListObject, MUIA_Frame, MUIV_Frame_InputList,
   MUIA_List_Active, MUIV_List_Active_Top,
-  // MUIA_List_AdjustWidth, TRUE,
-   //MUIA_List_Format, "BAR,BAR,BAR,BAR",
       MUIA_List_Format,
   "BAR MIW=70 P=\033l, BAR MIW=10 P=\033c, BAR MIW=10 P=\033c, BAR MIW=10 "
   "P=\033c",
   MUIA_List_Title, TRUE, MUIA_List_DisplayHook, &DisplayHook,
-  MUIA_List_ConstructHook, -1, MUIA_List_DestructHook, -1, End, End, Child,
+  End, End, Child,
   obj->LAB_Tune_Result, End, End;
 
   group3 = GroupObject, MUIA_Frame, MUIV_Frame_Group, MUIA_FrameTitle,
@@ -433,8 +516,14 @@ VOID CreateWindowMain(struct ObjApp *obj) {
   obj->BTN_Tune_Play, Child, obj->TXT_Tune_URL, Child, obj->BTN_Tune_Stop,
   Child, obj->TXT_Tune_Details, Child, obj->BTN_Tune_Save, End;
 
-  group4 = GroupObject, MUIA_Group_Rows, 1, MUIA_Group_SameHeight, TRUE, Child,
-  obj->BTN_Save, Child, HSpace(0), Child, obj->BTN_Quit, End;
+  group4 = GroupObject,
+  MUIA_Group_Rows, 2, 
+  MUIA_Group_SameHeight, TRUE, 
+  Child, obj->BTN_Fav_Add,
+  Child, obj->BTN_Fav_Remove,
+  Child, obj->BTN_Save, 
+  Child, obj->BTN_Quit,
+  End;
 
   group0 = GroupObject, MUIA_Group_Columns, 1, MUIA_Group_SameWidth, TRUE,
   Child, group1, Child, group2, Child, group3, Child, group4, End;
@@ -451,7 +540,8 @@ VOID CreateWindowMain(struct ObjApp *obj) {
            obj->STR_Find_Tags, obj->CYC_Find_Codec, obj->CYC_Find_Country,
            obj->CHK_Find_HTTPS_Only, obj->CHK_Find_Hide_Broken, obj->BTN_Find,
            obj->LSV_Tune_List, obj->BTN_Tune_Play, obj->BTN_Tune_Stop,
-           obj->BTN_Tune_Save, obj->BTN_Save, obj->BTN_Quit, 0);
+           obj->BTN_Tune_Save, obj->BTN_Save, obj->BTN_Fav_Add, obj->BTN_Fav_Remove,
+           obj->BTN_Quit, 0);
 }
 void CreateWindowMainEvents(struct ObjApp *obj) {
   // Buttons
@@ -494,14 +584,26 @@ void CreateWindowSettings(struct ObjApp *obj) {
   APTR group0, group1, group2;
 
   // Controls
-  obj->BTN_Settings_Save = SimpleButton("Save");
-  obj->BTN_Settings_Cancel = SimpleButton("Cancel");
+    obj->BTN_Settings_Save = SimpleButton(GetTFString(MSG_ACTION_SAVE_ALL));     // "Save"
+    obj->BTN_Settings_Cancel = SimpleButton(GetTFString(MSG_ACTION_CANCEL));     // "Cancel"
 
+  obj->STR_Settings_AmigaAmp = StringObject,
+        MUIA_Frame, MUIV_Frame_String,
+        MUIA_String_MaxLen, 256,
+  End;
+    obj->BTN_Settings_AmigaAmp_Browse = SimpleButton(GetTFString(MSG_OPTION_BROWSE));  // "Browse"
+
+    APTR pathGroup = HGroup,
+        Child, obj->STR_Settings_AmigaAmp,
+        Child, obj->BTN_Settings_AmigaAmp_Browse,
+    End;
+
+  obj->CHK_Settings_Iconify = CheckMark(FALSE);
   // Host (URI string)
   obj->STR_Settings_API_Host = StringObject, MUIA_Frame, MUIV_Frame_String,
   MUIA_String_AdvanceOnCR, TRUE, MUIA_String_Accept, API_HOST_ACCEPT,
   MUIA_String_Format, MUIV_String_Format_Left, MUIA_String_MaxLen,
-  API_HOST_MAX_LEN, MUIA_Weight, 100, End;
+  API_HOST_MAX_LEN, MUIA_Weight, 200, End;
 
   // Port (Integer 0 to 65535)
   obj->STR_Settings_API_Port = StringObject, MUIA_Frame, MUIV_Frame_String,
@@ -546,10 +648,23 @@ void CreateWindowSettings(struct ObjApp *obj) {
   Child, obj->BTN_Settings_API_Limit_Spc, End;
 
   // Groups
-  group1 = GroupObject, MUIA_Frame, MUIV_Frame_Group, MUIA_FrameTitle,
-  "API Settings", MUIA_Group_Columns, 2, Child, Label("API Host :"), Child,
-  obj->STR_Settings_API_Host, Child, Label("API Port :"), Child, child1, Child,
-  Label("API Limit :"), Child, child2, End;
+group1 = GroupObject,
+    MUIA_Frame, MUIV_Frame_Group,
+    MUIA_FrameTitle, GetTFString(MSG_STATE_SETTINGS),    // "Settings"
+    MUIA_Group_SameWidth, FALSE,
+    MUIA_Group_Horiz, FALSE,
+    MUIA_Group_Columns, 2,
+    Child, Label(GetTFString(MSG_OPTION_API_HOST)),      // "API Host :"
+    Child, obj->STR_Settings_API_Host,
+    Child, Label(GetTFString(MSG_OPTION_API_PORT)),      // "API Port :"
+    Child, child1,
+    Child, Label(GetTFString(MSG_GUI_LIMIT)),           // "API Limit :"
+    Child, child2,
+    Child, Label(GetTFString(MSG_OPTION_SELECT_PROGRAM)), // "AmigaAmp Path :"
+    Child, pathGroup,
+    Child, Label(GetTFString(MSG_OPTION_ICONIFY_AMIGAAMP)), // "Iconify AmigaAmp :"
+    Child, obj->CHK_Settings_Iconify,
+End;
 
   group2 = GroupObject, MUIA_Group_Rows, 1, Child, obj->BTN_Settings_Save,
   Child, HSpace(0), Child, obj->BTN_Settings_Cancel, End;
@@ -558,16 +673,17 @@ void CreateWindowSettings(struct ObjApp *obj) {
   End;
 
   // Window
-  obj->WIN_Settings = WindowObject, MUIA_Window_Title, "TuneFinderMUI Settings",
-  MUIA_Window_ID, APP_ID_WIN_SETTINGS, MUIA_Window_AppWindow, FALSE,
+  obj->WIN_Settings = WindowObject, MUIA_Window_Title, GetTFString(MSG_STATE_SETTINGS),
+  MUIA_Window_ID, APP_ID_WIN_SETTINGS, MUIA_Window_AppWindow, FALSE, MUIA_Window_Width, 500, MUIA_Window_DragBar, TRUE, MUIA_Window_CloseGadget, TRUE,  
   MUIA_Window_NoMenus, TRUE, MUIA_Window_Width, MUIV_Window_Width_Scaled,
   WindowContents, group0, End;
 
   // Cycle Chain
   DoMethod(obj->WIN_Settings, MUIM_Window_SetCycleChain,
            obj->STR_Settings_API_Host, obj->STR_Settings_API_Port,
-           obj->STR_Settings_API_Limit, obj->BTN_Settings_Save,
-           obj->BTN_Settings_Cancel, 0);
+           obj->STR_Settings_API_Limit, obj->STR_Settings_AmigaAmp,
+           obj->BTN_Settings_AmigaAmp_Browse, obj->CHK_Settings_Iconify, 
+           obj->BTN_Settings_Save, obj->BTN_Settings_Cancel, 0);
 }
 
 void CreateWindowSettingsEvents(struct ObjApp *obj) {
@@ -593,6 +709,9 @@ void CreateWindowSettingsEvents(struct ObjApp *obj) {
 
   DoMethod(obj->BTN_Settings_Cancel, MUIM_Notify, MUIA_Pressed, FALSE, obj->App,
            2, MUIM_Application_ReturnID, EVENT_SETTINGS_CANCEL);
+  //
+    DoMethod(obj->BTN_Settings_AmigaAmp_Browse, MUIM_Notify, MUIA_Pressed, FALSE,
+  obj->App, 2, MUIM_Application_ReturnID, EVENT_SETTINGS_BROWSE_AMIGAAMP);
 
   // Window
   DoMethod(obj->WIN_Settings, MUIM_Notify, MUIA_Window_CloseRequest, TRUE,
