@@ -36,6 +36,7 @@
 #define APP_COPYRIGHT "Free to use and distribute"
 #define APP_DESCRIPTION "An Internet Radio browser for AmigaOS 3.x"
 #define APP_HELPFILE APP_NAME ".guide"
+#define MAX_STATUS_MSG_LEN 256
 
 // Window IDs
 #define APP_ID_WIN_MAIN MAKE_ID('T', 'F', 'M', '0')

@@ -24,6 +24,7 @@ PROGRAM_NAME = TuneFinderMUI
 SOURCES = \
 	$(SRCDIR)/main.c \
 	$(SRCDIR)/locale.c \
+	$(SRCDIR)/network.c \
 	$(SRCDIR)/app.c 
 
 # Generate object files list
@@ -37,7 +38,7 @@ BASE_CCFLAGS = -MP -MMD -Wextra -Wno-unused-function \
     -I$(INCDIR) -I$(SDKDIR) -I$(NDKDIR) -Iinclude
 
 # Additional libraries
-LIBS = -lamiga -lmui -ldebug
+LIBS = -lamiga -lmui -lm -ljson-c
 
 ifdef DEBUG
 CCFLAGS = $(BASE_CCFLAGS) -DDEBUG_BUILD -O0 -g

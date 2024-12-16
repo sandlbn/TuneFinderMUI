@@ -16,6 +16,7 @@
 
 #include "../include/app.h"
 #include "../include/main.h"
+#include "../include/network.h"
 
 // Global variables
 static CONST_STRPTR Codecs[32];
@@ -23,11 +24,7 @@ static CONST_STRPTR Countries[32];
 struct ObjApp *objApp;
 struct Library *MUIMasterBase;
 struct Library *AslBase;
-// Static test data
-struct Tune tune1;
-struct Tune tune2;
-struct Tune tune3;
-struct Tune tune4;
+
 
 // External references
 extern struct GfxBase *GfxBase;
@@ -155,55 +152,78 @@ BOOL APP_Find_Init(void) {
   return TRUE;
 }
 
-BOOL APP_Find(void) {
-  static char buf[1024];
-  STRPTR name, tags;
-  ULONG codec, country;
-  ULONG httpsOnly, hideBroken;
-  ULONG numEntries = 0;
+BOOL APP_Find(void)
+{
+    static char buf[1024];
+    STRPTR name, tags;
+    ULONG codec, country;
+    ULONG httpsOnly, hideBroken;
+    struct SearchParams params;
+    struct APISettings settings;
+    struct RadioStation *stations;
+    int numEntries = 0;
+    
+    PutStr("APP_Find()\n");
+    
+    // Get search parameters from GUI
+    get(objApp->STR_Find_Name, MUIA_String_Contents, &name);
+    get(objApp->STR_Find_Tags, MUIA_String_Contents, &tags);
+    get(objApp->CYC_Find_Codec, MUIA_Cycle_Active, &codec);
+    get(objApp->CYC_Find_Country, MUIA_Cycle_Active, &country);
+    get(objApp->CHK_Find_HTTPS_Only, MUIA_Selected, &httpsOnly);
+    get(objApp->CHK_Find_Hide_Broken, MUIA_Selected, &hideBroken);
+    
+    // Get settings
+    get(objApp->STR_Settings_API_Host, MUIA_String_Contents, &settings.host);
+    get(objApp->STR_Settings_API_Port, MUIA_String_Integer, &settings.port);
+    get(objApp->STR_Settings_API_Limit, MUIA_String_Integer, &settings.limit);
+    
+    // Setup search parameters
+    params.name = name;
+    params.tag_list = tags;
+    params.codec = Codecs[codec];
+    params.country_code = Countries[country];
+    params.hidebroken = hideBroken;
+    params.is_https = httpsOnly ? HTTPS_TRUE : HTTPS_ALL;
+    params.limit = settings.limit;
+    params.state = NULL;  // Not using state search for now
+    
+    // Clear existing list
+    DoMethod(objApp->LSV_Tune_List, MUIM_List_Clear);
+    set(objApp->LSV_Tune_List, MUIA_List_Quiet, TRUE);
 
-  // Get search parameters
-  get(objApp->STR_Find_Name, MUIA_String_Contents, &name);
-  get(objApp->STR_Find_Tags, MUIA_String_Contents, &tags);
-  get(objApp->CYC_Find_Codec, MUIA_Cycle_Active, &codec);
-  get(objApp->CYC_Find_Country, MUIA_Cycle_Active, &country);
-  get(objApp->CHK_Find_HTTPS_Only, MUIA_Selected, &httpsOnly);
-  get(objApp->CHK_Find_Hide_Broken, MUIA_Selected, &hideBroken);
+    // Perform search
+    stations = SearchStations(&settings, &params, &numEntries);
+    if (stations)
+    {
+        struct Tune tune;
+        for(int i = 0; i < numEntries; i++)
+        {
+            // Convert station to tune structure
+            tune.tu_Name = stations[i].name;
+            tune.tu_BitRate = stations[i].bitrate;
+            tune.tu_Codec = stations[i].codec;
+            tune.tu_Country = stations[i].country;
+            tune.tu_Description = stations[i].url;
 
-
-
-  tune1.tu_Name = "Chillout Radio";
-  tune1.tu_BitRate = "128bits";
-  tune1.tu_Codec = "MP3";
-  tune1.tu_Country = "UK - United Kingdom";
-  tune1.tu_Description =  "Chillout Radio description";
-  tune2.tu_Name = "Chillout Radio";
-  tune2.tu_BitRate = "128bits";
-  tune2.tu_Codec = "MP3";
-  tune2.tu_Country = "UK - United Kingdom";
-  tune2.tu_Description = "Chillout Radio description";
-
-  // Update list
-  DoMethod(objApp->LSV_Tune_List, MUIM_List_Clear);
-  set(objApp->LSV_Tune_List, MUIA_List_Quiet, TRUE);
-  DoMethod(objApp->LSV_Tune_List, MUIM_List_InsertSingle, &tune1, MUIV_List_Insert_Bottom);
-  DoMethod(objApp->LSV_Tune_List, MUIM_List_InsertSingle, &tune2, MUIV_List_Insert_Bottom);
-  
-  set(objApp->LSV_Tune_List, MUIA_List_Quiet, FALSE);
-
-  // Update result count
-  get(objApp->LSV_Tune_List, MUIA_List_Entries, &numEntries);
-
-  if (numEntries > 0) {
-        GetTFFormattedString(buf, sizeof(buf), MSG_STATUS_SEARCH_COMPLETE, numEntries);  // "Search completed. Found %d tunes."
-  } else {
-        strcpy(buf, GetTFString(MSG_STATUS_NO_STATIONS));  // "No tunes."
-  }
-
-  set(objApp->LAB_Tune_Result, MUIA_Text_Contents, buf);
-  set(objApp->LSV_Tune_List, MUIA_List_Active, MUIV_List_Active_Top);
-
-  return TRUE;
+            DoMethod(objApp->LSV_Tune_List, MUIM_List_InsertSingle, &tune, MUIV_List_Insert_Bottom);
+        }
+        
+        // Free stations array
+        free(stations);
+    }
+    
+    set(objApp->LSV_Tune_List, MUIA_List_Quiet, FALSE);
+    
+    // Update result count and display
+    get(objApp->LSV_Tune_List, MUIA_List_Entries, &numEntries);
+    sprintf(buf, "Found %d tune(s), in 0.8 second(s) [Limit: %lu].", 
+            numEntries, settings.limit);
+    set(objApp->LAB_Tune_Result, MUIA_Text_Contents, buf);
+    
+    set(objApp->LSV_Tune_List, MUIA_List_Active, MUIV_List_Active_Top);
+    
+    return TRUE;
 }
 
 int main(void) {
@@ -217,6 +237,14 @@ int main(void) {
         return 20;
 
     }
+    // Initialize network
+    if (!InitNetworkSystem())
+    {
+        PutStr("Failed to initialize network system\n");
+        CleanupLocaleSystem();
+        return RETURN_FAIL;
+    }
+
     if ((objApp = CreateApp())) {
       BOOL running = TRUE;
 
@@ -359,6 +387,7 @@ int main(void) {
 
 CleanupLibs();
  CleanupLocaleSystem();
+ CleanupNetworkSystem();
   return result;
 }
 

@@ -127,6 +127,17 @@ static const char *built_in_strings[] = {
     "Failed to start playback",            // 90
     "AmigaAMP is not running",            // 91
     "Playback stopped",                    // 92
+    "Failed to create request",            // 93
+    "HTTP request failed",                 // 94
+    "Failed to parse response",            // 95
+    "Searching",                          // 96
+    "Failed to create socket",            // 97
+    "Failed to allocate buffers",         // 98
+    "Failed to resolve host",             // 99
+    "Failed to connect to server",        // 100
+    "Failed to send request",             // 101
+    "Connection timeout",                 // 102
+
 
     NULL  // Final terminator
 };
