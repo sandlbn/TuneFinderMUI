@@ -38,6 +38,8 @@ BOOL APP_Tune_DblClick(void);
 BOOL APP_Tune_Play(void);
 BOOL APP_Tune_Stop(void);
 BOOL APP_Tune_Save(void);
+BOOL APP_Fav_Add(void);
+BOOL APP_Fav_Remove(void);
 
 // Internal functions declarations
 void CreateMenu(struct ObjApp *obj);

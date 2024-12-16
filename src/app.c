@@ -183,17 +183,29 @@ BOOL APP_Settings_Init(void) {
   return TRUE;
 }
 
-BOOL APP_Settings_API_Limit_Inc(void) {
-  LONG limit;
-  get(objApp->STR_Settings_API_Limit, MUIA_String_Integer, &limit);
-
-  if (limit < 10000) {
-    limit++;
-    set(objApp->STR_Settings_API_Limit, MUIA_String_Integer, limit);
-  }
-
-  return TRUE;
+BOOL APP_Settings_API_Limit_Inc(void)
+{
+    LONG limit;
+    static char buf[128];
+    
+    PutStr("APP_Settings_API_Limit_Inc()\n");
+    get(objApp->STR_Settings_API_Limit, MUIA_String_Integer, &limit);
+    
+    if (limit < 10000)
+    {
+        limit++;
+        set(objApp->STR_Settings_API_Limit, MUIA_String_Integer, limit);
+    }
+    else
+    {
+        // Show error message
+        GetTFFormattedString(buf, sizeof(buf), MSG_ERR_INVALID_LIMIT, limit);
+        set(objApp->LAB_Tune_Result, MUIA_Text_Contents, buf);
+    }
+    
+    return TRUE;
 }
+
 
 BOOL APP_Tune_Active(void) {
   LONG index;
@@ -260,17 +272,29 @@ BOOL APP_Tune_Save(void)
 }
 
 
-BOOL APP_Tune_DblClick(void) {
-  LONG index;
-  static char buf[128];
-
-  PutStr("APP_Tune_DblClick()\n");
-  get(objApp->LSV_Tune_List, MUIA_List_Active, &index);
-  sprintf(buf, "Double click index: %ld\n", index);
-  PutStr(buf);
-
-  return TRUE;
+BOOL APP_Tune_DblClick(void)
+{
+    LONG index;
+    static char buf[128];
+    struct Tune *tune = NULL;
+    
+    PutStr("APP_Tune_DblClick()\n");
+    get(objApp->LSV_Tune_List, MUIA_List_Active, &index);
+    
+    if (index != MUIV_List_Active_Off)
+    {
+        DoMethod(objApp->LSV_Tune_List, MUIM_List_GetEntry, index, &tune);
+        if (tune)
+        {
+            // Start playing on double click
+            GetTFFormattedString(buf, sizeof(buf), MSG_STATUS_PLAYING, tune->tu_Name);
+            set(objApp->LAB_Tune_Result, MUIA_Text_Contents, buf);
+        }
+    }
+    
+    return TRUE;
 }
+
 
 BOOL APP_Iconify(void) {
   PutStr("APP_Iconify()\n");
@@ -317,17 +341,82 @@ BOOL APP_Tune_Stop(void)
     
     return TRUE;
 }
+BOOL APP_Settings_API_Port_Dec(void)
+{
+    LONG port;
+    static char buf[128];
+    
+    PutStr("APP_Settings_API_Port_Dec()\n");
+    get(objApp->STR_Settings_API_Port, MUIA_String_Integer, &port);
+    
+    if (port > 1)
+    {
+        port--;
+        set(objApp->STR_Settings_API_Port, MUIA_String_Integer, port);
+    }
+    else
+    {
+        // Show error message
+        GetTFFormattedString(buf, sizeof(buf), MSG_ERR_INVALID_PORT, port);
+        set(objApp->LAB_Tune_Result, MUIA_Text_Contents, buf);
+    }
+    
+    return TRUE;
+}
+BOOL APP_Fav_Add(void)
+{
+    LONG index;
+    static char buf[128];
+    struct Tune *tune = NULL;
+    
+    PutStr("APP_Fav_Add()\n");
+    get(objApp->LSV_Tune_List, MUIA_List_Active, &index);
+    
+    if (index != MUIV_List_Active_Off)
+    {
+        DoMethod(objApp->LSV_Tune_List, MUIM_List_GetEntry, index, &tune);
+        if (tune)
+        {
+            set(objApp->LAB_Tune_Result, MUIA_Text_Contents, 
+                GetTFString(MSG_STATUS_ADDED_FAV));  // "Added to favorites"
+        }
+        else
+        {
+            // Show error
+            set(objApp->LAB_Tune_Result, MUIA_Text_Contents, 
+                GetTFString(MSG_ERR_ADD_FAV));  // "Failed to add to favorites"
+        }
+    }
+    
+    return TRUE;
+}
 
-BOOL APP_Settings_API_Port_Dec(void) {
-  LONG port;
-  get(objApp->STR_Settings_API_Port, MUIA_String_Integer, &port);
-
-  if (port > 1) {
-    port--;
-    set(objApp->STR_Settings_API_Port, MUIA_String_Integer, port);
-  }
-
-  return TRUE;
+BOOL APP_Fav_Remove(void)
+{
+    LONG index;
+    static char buf[128];
+    struct Tune *tune = NULL;
+    
+    PutStr("APP_Fav_Remove()\n");
+    get(objApp->LSV_Tune_List, MUIA_List_Active, &index);
+    
+    if (index != MUIV_List_Active_Off)
+    {
+        DoMethod(objApp->LSV_Tune_List, MUIM_List_GetEntry, index, &tune);
+        if (tune)
+        {
+            set(objApp->LAB_Tune_Result, MUIA_Text_Contents, 
+                GetTFString(MSG_STATUS_REMOVED_FAV));  // "Removed from favorites"
+        }
+        else
+        {
+            // Show error
+            set(objApp->LAB_Tune_Result, MUIA_Text_Contents, 
+                GetTFString(MSG_ERR_REMOVE_FAV));  // "Failed to remove from favorites"
+        }
+    }
+    
+    return TRUE;
 }
 
 BOOL APP_Settings_Cancel(void)
@@ -365,16 +454,27 @@ BOOL APP_Settings_Save(void) {
   return TRUE;
 }
 
-BOOL APP_Settings_API_Limit_Dec(void) {
-  LONG limit;
-  get(objApp->STR_Settings_API_Limit, MUIA_String_Integer, &limit);
-
-  if (limit > 1) {
-    limit--;
-    set(objApp->STR_Settings_API_Limit, MUIA_String_Integer, limit);
-  }
-
-  return TRUE;
+BOOL APP_Settings_API_Limit_Dec(void)
+{
+    LONG limit;
+    static char buf[128];
+    
+    PutStr("APP_Settings_API_Limit_Dec()\n");
+    get(objApp->STR_Settings_API_Limit, MUIA_String_Integer, &limit);
+    
+    if (limit > 1)
+    {
+        limit--;
+        set(objApp->STR_Settings_API_Limit, MUIA_String_Integer, limit);
+    }
+    else
+    {
+        // Show error message
+        GetTFFormattedString(buf, sizeof(buf), MSG_ERR_INVALID_LIMIT, limit);
+        set(objApp->LAB_Tune_Result, MUIA_Text_Contents, buf);
+    }
+    
+    return TRUE;
 }
 
 BOOL APP_Settings_MUI(void)
@@ -388,16 +488,27 @@ BOOL APP_Settings_MUI(void)
     return TRUE;
 }
 
-BOOL APP_Settings_API_Port_Inc(void) {
-  LONG port;
-  get(objApp->STR_Settings_API_Port, MUIA_String_Integer, &port);
-
-  if (port < 65535) {
-    port++;
-    set(objApp->STR_Settings_API_Port, MUIA_String_Integer, port);
-  }
-
-  return TRUE;
+BOOL APP_Settings_API_Port_Inc(void)
+{
+    LONG port;
+    static char buf[128];
+    
+    PutStr("APP_Settings_API_Port_Inc()\n");
+    get(objApp->STR_Settings_API_Port, MUIA_String_Integer, &port);
+    
+    if (port < 65535)
+    {
+        port++;
+        set(objApp->STR_Settings_API_Port, MUIA_String_Integer, port);
+    }
+    else
+    {
+        // Show error message
+        GetTFFormattedString(buf, sizeof(buf), MSG_ERR_INVALID_PORT, port);
+        set(objApp->LAB_Tune_Result, MUIA_Text_Contents, buf);
+    }
+    
+    return TRUE;
 }
 
 BOOL APP_Save(void)
@@ -556,7 +667,12 @@ void CreateWindowMainEvents(struct ObjApp *obj) {
 
   DoMethod(obj->BTN_Tune_Save, MUIM_Notify, MUIA_Pressed, TRUE, obj->App, 2,
            MUIM_Application_ReturnID, EVENT_TUNE_SAVE);
-
+  // Fav 
+  DoMethod(obj->BTN_Fav_Add, MUIM_Notify, MUIA_Pressed, FALSE,
+        obj->App, 2, MUIM_Application_ReturnID, EVENT_FAV_ADD);
+        
+  DoMethod(obj->BTN_Fav_Remove, MUIM_Notify, MUIA_Pressed, FALSE,
+        obj->App, 2, MUIM_Application_ReturnID, EVENT_FAV_REMOVE);
   // Listview
   DoMethod(obj->LSV_Tune_List, MUIM_Notify, MUIA_List_Active, MUIV_EveryTime,
            obj->App, 2, MUIM_Application_ReturnID, EVENT_TUNE_ACTIVE);
@@ -571,12 +687,16 @@ void CreateWindowMainEvents(struct ObjApp *obj) {
   DoMethod(obj->BTN_Quit, MUIM_Notify, MUIA_Pressed, FALSE, obj->App, 2,
            MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
 
+
   // Window
   DoMethod(obj->WIN_Main, MUIM_Notify, MUIA_Window_CloseRequest, TRUE,
            obj->WIN_Main, 3, MUIM_Set, MUIA_Window_Open, FALSE);
 
   DoMethod(obj->WIN_Main, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, obj->App,
            2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
+
+
+
 }
 
 void CreateWindowSettings(struct ObjApp *obj) {

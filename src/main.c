@@ -186,10 +186,9 @@ BOOL APP_Find(void) {
   // Update list
   DoMethod(objApp->LSV_Tune_List, MUIM_List_Clear);
   set(objApp->LSV_Tune_List, MUIA_List_Quiet, TRUE);
- DoMethod(objApp->LSV_Tune_List, MUIM_List_InsertSingle, &tune1, MUIV_List_Insert_Bottom);
-DoMethod(objApp->LSV_Tune_List, MUIM_List_InsertSingle, &tune2, MUIV_List_Insert_Bottom);
-
-  // ... Insert other tunes ...
+  DoMethod(objApp->LSV_Tune_List, MUIM_List_InsertSingle, &tune1, MUIV_List_Insert_Bottom);
+  DoMethod(objApp->LSV_Tune_List, MUIM_List_InsertSingle, &tune2, MUIV_List_Insert_Bottom);
+  
   set(objApp->LSV_Tune_List, MUIA_List_Quiet, FALSE);
 
   // Update result count
@@ -282,7 +281,6 @@ int main(void) {
             case EVENT_QUIT:
               running = FALSE;
               break;
-
             case EVENT_SETTINGS:
               APP_Settings();
               break;
@@ -299,7 +297,6 @@ int main(void) {
               APP_Settings_API_Limit_Inc();
               break;
             case EVENT_SETTINGS_API_LIMIT_DEC:
-            PutStr("DDDDDDD");
               APP_Settings_API_Limit_Dec();
               break;
             case EVENT_SETTINGS_SAVE:
@@ -309,32 +306,38 @@ int main(void) {
               APP_Settings_Cancel();
               break;  
             case EVENT_SETTINGS_BROWSE_AMIGAAMP: {
-    struct FileRequester *req;
-    char path[256];
-                  PutStr("ASL up...\n");
+            struct FileRequester *req;
+            char path[256];
+                          PutStr("ASL up...\n");
 
-    if (AslBase)
-    {
-
-        req = AllocAslRequestTags(ASL_FileRequest,
-            ASLFR_TitleText, "Select AmigaAmp executable",
-            ASLFR_DoPatterns, TRUE,
-            ASLFR_InitialPattern, "#?",
-            TAG_DONE);
-        
-        if (req)
-        {
-            if (AslRequest(req, NULL))
+            if (AslBase)
             {
-                strcpy(path, req->fr_Drawer);
-                AddPart(path, req->fr_File, sizeof(path));
-                set(objApp->STR_Settings_AmigaAmp, MUIA_String_Contents, path);
+
+                req = AllocAslRequestTags(ASL_FileRequest,
+                    ASLFR_TitleText, "Select AmigaAmp executable",
+                    ASLFR_DoPatterns, TRUE,
+                    ASLFR_InitialPattern, "#?",
+                    TAG_DONE);
+                
+                if (req)
+                {
+                    if (AslRequest(req, NULL))
+                    {
+                        strcpy(path, req->fr_Drawer);
+                        AddPart(path, req->fr_File, sizeof(path));
+                        set(objApp->STR_Settings_AmigaAmp, MUIA_String_Contents, path);
+                    }
+                    FreeAslRequest(req);
+                }
             }
-            FreeAslRequest(req);
         }
-    }
-}
     
+            break;
+            case EVENT_FAV_ADD:
+            APP_Fav_Add();
+            break;
+            case EVENT_FAV_REMOVE:
+            APP_Fav_Remove();
             break;
 
             case MUIV_Application_ReturnID_Quit:
