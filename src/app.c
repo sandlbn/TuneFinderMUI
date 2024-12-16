@@ -35,11 +35,11 @@ HOOKPROTONH(DisplayCode, VOID, char **array, struct Tune *tune) {
     //sprintf(buf, "Instance tune size: %ld, string length: %ld\n", 
     //    (long)sizeof(*tune),                    // Size of the tune structure
     //    (long)strlen(tune->tu_Name));           // Length of name string
-    //PutStr(buf);
+    //DEBUG("%s", buf);
 
   if (tune != NULL) {
     //  sprintf(buf, "Active tune: %d\n", sizeof(*tune));
-    //  PutStr(buf);
+    //  DEBUG("%s", buf);
     *array++ = tune->tu_Name;
     *array++ = tune->tu_Codec;
     *array++ = tune->tu_BitRate;
@@ -149,7 +149,7 @@ void CreateMenuEvents(struct ObjApp *obj) {
 }
 
 BOOL APP_Tune_List_Init(void) {
-  PutStr("APP_Tune_List_Init()\n");
+  DEBUG("%s", "APP_Tune_List_Init()\n");
 
   DoMethod(objApp->LSV_Tune_List, MUIM_List_Clear);
   set(objApp->LSV_Tune_List, MUIA_List_Quiet, FALSE);
@@ -160,7 +160,7 @@ BOOL APP_Tune_List_Init(void) {
 }
 
 BOOL APP_Tune_Details_Init(void) {
-  PutStr("APP_Tune_Details_Init()\n");
+  DEBUG("%s", "APP_Tune_Details_Init()\n");
 
   set(objApp->TXT_Tune_Name, MUIA_Text_Contents, "\033bWelcome to " APP_NAME);
   set(objApp->TXT_Tune_URL, MUIA_Text_Contents, "By " APP_AUTHORS);
@@ -174,7 +174,7 @@ BOOL APP_Tune_Details_Init(void) {
 }
 
 BOOL APP_Settings_Init(void) {
-  PutStr("APP_Settings_Init()\n");
+  DEBUG("%s", "APP_Settings_Init()\n");
 
   set(objApp->STR_Settings_API_Host, MUIA_String_Contents, API_HOST_DEFAULT);
   set(objApp->STR_Settings_API_Port, MUIA_String_Integer, API_PORT_DEFAULT);
@@ -188,7 +188,7 @@ BOOL APP_Settings_API_Limit_Inc(void)
     LONG limit;
     static char buf[128];
     
-    PutStr("APP_Settings_API_Limit_Inc()\n");
+    DEBUG("%s", "APP_Settings_API_Limit_Inc()\n");
     get(objApp->STR_Settings_API_Limit, MUIA_String_Integer, &limit);
     
     if (limit < 10000)
@@ -211,10 +211,10 @@ BOOL APP_Tune_Active(void) {
   LONG index;
   static char buf[1024];
 
-  PutStr("APP_Tune_Active()\n");
+  DEBUG("%s", "APP_Tune_Active()\n");
   get(objApp->LSV_Tune_List, MUIA_List_Active, &index);
   sprintf(buf, "Active index: %ld\n", index);
-  PutStr(buf);
+  DEBUG("%s", buf);
 
   if (index == MUIV_List_Active_Off) {
     set(objApp->BTN_Tune_Play, MUIA_Disabled, TRUE);
@@ -248,7 +248,7 @@ BOOL APP_Tune_Save(void)
     static char buf[128];
     struct Tune *tune = NULL;
     
-    PutStr("APP_Tune_Save()\n");
+    DEBUG("%s", "APP_Tune_Save()\n");
     get(objApp->LSV_Tune_List, MUIA_List_Active, &index);
     
     if (index != MUIV_List_Active_Off)
@@ -278,7 +278,7 @@ BOOL APP_Tune_DblClick(void)
     static char buf[128];
     struct Tune *tune = NULL;
     
-    PutStr("APP_Tune_DblClick()\n");
+    DEBUG("%s", "APP_Tune_DblClick()\n");
     get(objApp->LSV_Tune_List, MUIA_List_Active, &index);
     
     if (index != MUIV_List_Active_Off)
@@ -297,7 +297,7 @@ BOOL APP_Tune_DblClick(void)
 
 
 BOOL APP_Iconify(void) {
-  PutStr("APP_Iconify()\n");
+  DEBUG("%s", "APP_Iconify()\n");
   set(objApp->App, MUIA_Application_Iconified, TRUE);
   return TRUE;
 }
@@ -308,7 +308,7 @@ BOOL APP_Tune_Play(void)
     static char buf[128];
     struct Tune *tune = NULL;
     
-    PutStr("APP_Tune_Play()\n");
+    DEBUG("%s", "APP_Tune_Play()\n");
     get(objApp->LSV_Tune_List, MUIA_List_Active, &index);
     
     if (index != MUIV_List_Active_Off)
@@ -333,7 +333,7 @@ BOOL APP_Tune_Play(void)
 
 BOOL APP_Tune_Stop(void)
 {
-    PutStr("APP_Tune_Stop()\n");
+    DEBUG("%s", "APP_Tune_Stop()\n");
     
     // Show "Playback stopped" message
     set(objApp->LAB_Tune_Result, MUIA_Text_Contents, 
@@ -346,7 +346,7 @@ BOOL APP_Settings_API_Port_Dec(void)
     LONG port;
     static char buf[128];
     
-    PutStr("APP_Settings_API_Port_Dec()\n");
+    DEBUG("%s", "APP_Settings_API_Port_Dec()\n");
     get(objApp->STR_Settings_API_Port, MUIA_String_Integer, &port);
     
     if (port > 1)
@@ -369,7 +369,7 @@ BOOL APP_Fav_Add(void)
     static char buf[128];
     struct Tune *tune = NULL;
     
-    PutStr("APP_Fav_Add()\n");
+    DEBUG("%s", "APP_Fav_Add()\n");
     get(objApp->LSV_Tune_List, MUIA_List_Active, &index);
     
     if (index != MUIV_List_Active_Off)
@@ -397,7 +397,7 @@ BOOL APP_Fav_Remove(void)
     static char buf[128];
     struct Tune *tune = NULL;
     
-    PutStr("APP_Fav_Remove()\n");
+    DEBUG("%s", "APP_Fav_Remove()\n");
     get(objApp->LSV_Tune_List, MUIA_List_Active, &index);
     
     if (index != MUIV_List_Active_Off)
@@ -421,7 +421,7 @@ BOOL APP_Fav_Remove(void)
 
 BOOL APP_Settings_Cancel(void)
 {
-    PutStr("APP_Settings_Cancel()\n");
+    DEBUG("%s", "APP_Settings_Cancel()\n");
     
     // Could show a message that settings were not saved
     set(objApp->LAB_Tune_Result, MUIA_Text_Contents, 
@@ -438,7 +438,7 @@ BOOL APP_Settings_Save(void) {
   STRPTR apiHost;
   ULONG apiPort, apiLimit;
 
-  PutStr("APP_Settings_Save()\n");
+  DEBUG("%s", "APP_Settings_Save()\n");
 
   get(objApp->STR_Settings_API_Host, MUIA_String_Contents, &apiHost);
   get(objApp->STR_Settings_API_Port, MUIA_String_Integer, &apiPort);
@@ -459,7 +459,7 @@ BOOL APP_Settings_API_Limit_Dec(void)
     LONG limit;
     static char buf[128];
     
-    PutStr("APP_Settings_API_Limit_Dec()\n");
+    DEBUG("%s", "APP_Settings_API_Limit_Dec()\n");
     get(objApp->STR_Settings_API_Limit, MUIA_String_Integer, &limit);
     
     if (limit > 1)
@@ -479,7 +479,7 @@ BOOL APP_Settings_API_Limit_Dec(void)
 
 BOOL APP_Settings_MUI(void)
 {
-    PutStr("APP_Settings_MUI()\n");
+    DEBUG("%s", "APP_Settings_MUI()\n");
     
     // Open MUI settings window
     DoMethod(objApp->App, MUIM_Application_OpenConfigWindow, 0,
@@ -493,7 +493,7 @@ BOOL APP_Settings_API_Port_Inc(void)
     LONG port;
     static char buf[128];
     
-    PutStr("APP_Settings_API_Port_Inc()\n");
+    DEBUG("%s", "APP_Settings_API_Port_Inc()\n");
     get(objApp->STR_Settings_API_Port, MUIA_String_Integer, &port);
     
     if (port < 65535)
@@ -513,7 +513,7 @@ BOOL APP_Settings_API_Port_Inc(void)
 
 BOOL APP_Save(void)
 {
-    PutStr("APP_Save()\n");
+    DEBUG("%s", "APP_Save()\n");
     
     // Assuming we're saving all tunes
     set(objApp->LAB_Tune_Result, MUIA_Text_Contents, 
@@ -524,7 +524,7 @@ BOOL APP_Save(void)
 
 BOOL APP_Settings(void)
 {
-    PutStr("APP_Settings()\n");
+    DEBUG("%s", "APP_Settings()\n");
     
     // Before opening settings window, we could show a status message
     set(objApp->LAB_Tune_Result, MUIA_Text_Contents, 
@@ -841,10 +841,10 @@ void CreateWindowSettingsEvents(struct ObjApp *obj) {
 struct ObjApp *CreateApp(void) {
   struct ObjApp *obj;
 
-  PutStr("Creating App...\n");
+  DEBUG("%s", "Creating App...\n");
 
   if ((obj = AllocVec(sizeof(struct ObjApp), MEMF_PUBLIC | MEMF_CLEAR))) {
-    PutStr("Memory allocated\n");
+    DEBUG("%s", "Memory allocated\n");
 
     // Create main window
     CreateMenu(obj);
@@ -861,19 +861,19 @@ struct ObjApp *CreateApp(void) {
       obj->WIN_Main, SubWindow, obj->WIN_Settings, End;
 
       if (obj->App) {
-        PutStr("Application object created\n");
+        DEBUG("%s", "Application object created\n");
 
         // Create MUI events
-        PutStr("Creating Menu Events...\n");
+        DEBUG("%s", "Creating Menu Events...\n");
         CreateMenuEvents(obj);
 
-        PutStr("Creating Window Events...\n");
+        DEBUG("%s", "Creating Window Events...\n");
         CreateWindowMainEvents(obj);
 
-        PutStr("Creating Settings Events...\n");
+        DEBUG("%s", "Creating Settings Events...\n");
         CreateWindowSettingsEvents(obj);
 
-        PutStr("App creation complete\n");
+        DEBUG("%s", "App creation complete\n");
         return obj;
       }
     }

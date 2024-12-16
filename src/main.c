@@ -69,7 +69,7 @@ static void CleanupLibs(void)
 // Function implementations
 BOOL APP_About(void)
 {
-    PutStr("APP_About()\n");
+    DEBUG("%s", "APP_About()\n");
     
     // Create the about text with proper translations
     static char aboutText[512];
@@ -101,7 +101,7 @@ BOOL APP_About(void)
 }
 
 BOOL APP_About_MUI(void) {
-  PutStr("APP_About_MUI()\n");
+  DEBUG("%s", "APP_About_MUI()\n");
 
   if (!objApp->WIN_About) {
     objApp->WIN_About = AboutmuiObject, MUIA_Window_RefWindow, objApp->WIN_Main,
@@ -113,7 +113,7 @@ BOOL APP_About_MUI(void) {
 }
 
 BOOL APP_Find_Init(void) {
-  PutStr("APP_Find_Init()\n");
+  DEBUG("%s", "APP_Find_Init()\n");
 
   // Initialize Codecs array
   Codecs[0] = GetTFString(MSG_GUI_UNKNOWN);
@@ -210,7 +210,7 @@ int main(void) {
   int result = RETURN_FAIL;
 
     if (!InitLocaleSystem()) {
-        PutStr("Warning: Failed to initialize locale system\n");
+        DEBUG("%s", "Warning: Failed to initialize locale system\n");
         // Continue anyway, will use built-in strings
     }
     if (!InitLibs()) {
@@ -221,24 +221,24 @@ int main(void) {
       BOOL running = TRUE;
 
       // Initialize application
-      PutStr("Initializing...\n");
+      DEBUG("%s", "Initializing...\n");
       APP_Find_Init();
       APP_Tune_List_Init();
       APP_Tune_Details_Init();
       APP_Settings_Init();
 
-      PutStr("Opening main window...\n");
+      DEBUG("%s", "Opening main window...\n");
       DoMethod(objApp->WIN_Main, MUIM_Set, MUIA_Window_Open, TRUE);
-      PutStr("Window open command sent\n");
+      DEBUG("%s", "Window open command sent\n");
 
       // Ensure window is actually open
       ULONG isOpen = FALSE;
       get(objApp->WIN_Main, MUIA_Window_Open, &isOpen);
       if (!isOpen) {
-        PutStr("Failed to open window!\n");
+        DEBUG("%s", "Failed to open window!\n");
         running = FALSE;
       } else {
-        PutStr("Window opened successfully\n");
+        DEBUG("%s", "Window opened successfully\n");
       }
 
       // Main event loop
@@ -308,7 +308,7 @@ int main(void) {
             case EVENT_SETTINGS_BROWSE_AMIGAAMP: {
             struct FileRequester *req;
             char path[256];
-                          PutStr("ASL up...\n");
+                          DEBUG("%s", "ASL up...\n");
 
             if (AslBase)
             {
@@ -349,12 +349,12 @@ int main(void) {
         if (signals) Wait(signals);
       }
 
-      PutStr("Cleaning up...\n");
+      DEBUG("%s", "Cleaning up...\n");
       set(objApp->WIN_Main, MUIA_Window_Open, FALSE);
       DisposeApp(objApp);
       result = RETURN_OK;
     } else {
-      PutStr("Failed to create application!\n");
+      DEBUG("%s", "Failed to create application!\n");
     }
 
 CleanupLibs();
