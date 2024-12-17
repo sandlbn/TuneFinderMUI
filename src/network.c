@@ -24,60 +24,39 @@ void UpdateStatusMessage(const char *msg)
         set(objApp->LAB_Tune_Result, MUIA_Text_Contents, msg);
     }
 }
-struct RadioStation *SearchStations(const struct APISettings *settings, 
-                                  const struct SearchParams *params,
-                                  LONG *count)
+struct Tune *SearchStations(const struct APISettings *settings, 
+                          const struct SearchParams *params,
+                          LONG *count)
 {
-
     char *url = NULL;
     char *response = NULL;
-    struct RadioStation *stations = NULL;
+    struct Tune *tunes = NULL;
     *count = 0;
 
-    // Build the search URL
     url = build_search_url(settings, params);
     if (!url) {
         UpdateStatusMessage(GetTFString(MSG_FAILED_CREATE_REQUEST));
         return NULL;
     }
-    DEBUG("%s", url);
 
-    // Make the HTTP request
     response = make_http_request(settings, url);
-    free(url);  // Free URL after use
+    free(url);
 
     if (!response) {
         UpdateStatusMessage(GetTFString(MSG_FAILED_HTTP_REQ));
         return NULL;
     }
 
-    // Parse the JSON response
-    stations = parse_stations_json(response, count);
-    free(response);  // Free response after parsing
+    // Modify parse_stations_json to return Tune instead of RadioStation
+    tunes = parse_stations_json(response, count);
+    free(response);
 
-    if (!stations) {
+    if (!tunes) {
         UpdateStatusMessage(GetTFString(MSG_FAILED_PARSE_RESP));
         return NULL;
     }
 
-    return stations;
-}
-
-void RadioStationToTune(const struct RadioStation *station, struct Tune *tune)
-{
-    if (station && tune)
-    {
-        // Convert bitrate to string
-        static char bitrate_str[32];
-        sprintf(bitrate_str, "%dkbps", station->bitrate);
-        
-        // Assign values
-        tune->tu_Name = station->name;
-        tune->tu_Codec = station->codec;
-        tune->tu_BitRate = bitrate_str;
-        tune->tu_Country = station->country;
-        tune->tu_Description = station->url;  // Using URL as description for now
-    }
+    return tunes;
 }
 
 BOOL InitNetworkSystem(void)
@@ -432,68 +411,62 @@ cleanup:
 
   return response;
 }
-struct RadioStation *parse_stations_json(const char *json_str, int *count) {
-  struct json_object *root;
-  struct RadioStation *stations = NULL;
-  int array_len;
-  int i;
+struct Tune *parse_stations_json(const char *json_str, int *count)
+{
+    struct json_object *root;
+    struct Tune *tunes = NULL;
+    int array_len;
+    int i;
 
-  *count = 0;
+    *count = 0;
 
-  DEBUG("Parsing JSON string");
-  root = json_tokener_parse(json_str);
-  if (!root) {
-    DEBUG("Failed to parse JSON response");
-    return NULL;
-  }
-
-  DEBUG("Getting array length");
-  array_len = json_object_array_length(root);
-  if (array_len <= 0) {
-    DEBUG("Empty array or invalid length");
-    json_object_put(root);
-    return NULL;
-  }
-
-  DEBUG("Allocating memory for %d stations", array_len);
-  stations = calloc(array_len, sizeof(struct RadioStation));
-  if (!stations) {
-    DEBUG("Memory allocation failed");
-    json_object_put(root);
-    return NULL;
-  }
-
-  DEBUG("Parsing individual stations");
-  for (i = 0; i < array_len; i++) {
-    struct json_object *station_obj = json_object_array_get_idx(root, i);
-    struct json_object *name_obj, *url_obj, *codec_obj, *bitrate_obj,
-        *country_obj;
-    const char *name, *url, *codec, *country;
-    int bitrate;
-
-    UpdateSearchStatus(i);
-
-    if (json_object_object_get_ex(station_obj, "name", &name_obj) &&
-        json_object_object_get_ex(station_obj, "url", &url_obj) &&
-        json_object_object_get_ex(station_obj, "codec", &codec_obj) &&
-        json_object_object_get_ex(station_obj, "countrycode", &country_obj) &&
-        json_object_object_get_ex(station_obj, "bitrate", &bitrate_obj)) {
-      name = json_object_get_string(name_obj);
-      url = json_object_get_string(url_obj);
-      codec = json_object_get_string(codec_obj);
-      country = json_object_get_string(country_obj);
-      bitrate = json_object_get_int(bitrate_obj);
-
-      stations[i].name = strdup(name);
-      stations[i].url = strdup(url);
-      stations[i].codec = strdup(codec);
-      stations[i].country = strdup(country);
-      stations[i].bitrate = bitrate;
-
-      (*count)++;
+    root = json_tokener_parse(json_str);
+    if (!root) {
+        return NULL;
     }
-  }
 
-  json_object_put(root);
-  return stations;
+    array_len = json_object_array_length(root);
+    if (array_len <= 0) {
+        json_object_put(root);
+        return NULL;
+    }
+
+    tunes = calloc(array_len, sizeof(struct Tune));
+    if (!tunes) {
+        json_object_put(root);
+        return NULL;
+    }
+
+    for (i = 0; i < array_len; i++) {
+        struct json_object *station_obj = json_object_array_get_idx(root, i);
+        struct json_object *name_obj, *url_obj, *codec_obj, *bitrate_obj, *country_obj;
+        const char *name, *url, *codec, *country;
+        int bitrate;
+
+        UpdateSearchStatus(i);
+
+        if (json_object_object_get_ex(station_obj, "name", &name_obj) &&
+            json_object_object_get_ex(station_obj, "url", &url_obj) &&
+            json_object_object_get_ex(station_obj, "codec", &codec_obj) &&
+            json_object_object_get_ex(station_obj, "countrycode", &country_obj) &&
+            json_object_object_get_ex(station_obj, "bitrate", &bitrate_obj)) {
+
+            name = json_object_get_string(name_obj);
+            url = json_object_get_string(url_obj);
+            codec = json_object_get_string(codec_obj);
+            country = json_object_get_string(country_obj);
+            bitrate = json_object_get_int(bitrate_obj);
+
+            tunes[i].name = strdup(name);
+            tunes[i].url = strdup(url);
+            tunes[i].codec = strdup(codec);
+            tunes[i].country = strdup(country);
+            tunes[i].bitrate = bitrate;
+
+            (*count)++;
+        }
+    }
+
+    json_object_put(root);
+    return tunes;
 }

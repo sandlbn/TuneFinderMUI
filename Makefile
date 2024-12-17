@@ -22,10 +22,13 @@ PROGRAM_NAME = TuneFinderMUI
 
 # Source files organized by component
 SOURCES = \
-	$(SRCDIR)/main.c \
-	$(SRCDIR)/locale.c \
-	$(SRCDIR)/network.c \
-	$(SRCDIR)/app.c 
+    $(SRCDIR)/main.c \
+    $(SRCDIR)/app.c \
+    $(SRCDIR)/network.c \
+    $(SRCDIR)/locale.c \
+	$(SRCDIR)/country_config.c \
+	$(SRCDIR)/utils.c \
+    $(SRCDIR)/amigaamp.c
 
 # Generate object files list
 OBJECTS = $(patsubst $(SRCDIR)/%.c,$(BUILDDIR)/%.o,$(SOURCES))

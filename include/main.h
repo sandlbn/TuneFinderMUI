@@ -5,8 +5,10 @@
 #include <intuition/intuition.h>
 #include <libraries/mui.h>
 #include "locale.h"
+#include "country_config.h"
 
 #define HOOKFUNC LONG (*)(struct Hook *, APTR, APTR)
+#define ENV_PATH "ENVARC:TuneFinder/"
 
 #ifndef MAKE_ID
 #define MAKE_ID(a, b, c, d) \
@@ -85,11 +87,12 @@ enum EVENT_IDS {
 
 // Structures
 struct Tune {
-  STRPTR tu_Name;
-  STRPTR tu_BitRate;
-  STRPTR tu_Codec;
-  STRPTR tu_Country;
-  STRPTR tu_Description;
+    struct Node node; 
+    char *name;     
+    char *url;        
+    char *codec;  
+    char *country;     
+    int bitrate;     
 };
 
 struct ObjApp {
@@ -145,7 +148,7 @@ struct ObjApp {
   APTR BTN_Settings_AmigaAmp_Browse;
   APTR STR_Settings_AmigaAmp;   // String for AmigaAmp path
   APTR CHK_Settings_Iconify;     // Checkbox for iconify option
-  
+  struct CountryConfig countryConfig;
 
 };
 

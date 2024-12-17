@@ -21,10 +21,10 @@ enum {
 char* make_http_request(const struct APISettings *settings, const char *path);
 char* build_search_url(const struct APISettings *settings, const struct SearchParams *params);
 char* url_encode(const char *str);
-struct RadioStation* parse_stations_json(const char *json_str, int *count);
+struct Tune* parse_stations_json(const char *json_str, int *count);
 BOOL InitNetworkSystem(void);
 void CleanupNetworkSystem(void);
-struct RadioStation *SearchStations(const struct APISettings *settings, 
+struct Tune *SearchStations(const struct APISettings *settings, 
                                   const struct SearchParams *params,
                                   LONG *count);
 void UpdateStatusMessage(const char *msg);

@@ -19,6 +19,8 @@
 #include "../include/app.h"
 #include "../include/main.h"
 #include "../include/locale.h"
+#include "../include/amigaamp.h"
+#include "../include/country_config.h"
 
 #include "SDI_compiler.h"
 #include "SDI_hook.h"
@@ -30,20 +32,12 @@ extern void geta4(void);
 struct ObjApp *objApp;  // Global variable definition
 
 HOOKPROTONH(DisplayCode, VOID, char **array, struct Tune *tune) {
-    //static char buf[1024];
-    //static char buf[128];
-    //sprintf(buf, "Instance tune size: %ld, string length: %ld\n", 
-    //    (long)sizeof(*tune),                    // Size of the tune structure
-    //    (long)strlen(tune->tu_Name));           // Length of name string
-    //DEBUG("%s", buf);
 
   if (tune != NULL) {
-    //  sprintf(buf, "Active tune: %d\n", sizeof(*tune));
-    //  DEBUG("%s", buf);
-    *array++ = tune->tu_Name;
-    *array++ = tune->tu_Codec;
-    *array++ = tune->tu_BitRate;
-    *array = tune->tu_Country;
+    *array++ = tune->name;
+    *array++ = tune->codec;
+    *array++ = tune->bitrate;
+    *array = tune->country;
   } else {
     // Column headers
     *array++ = "\033c\033uName";
@@ -225,11 +219,11 @@ BOOL APP_Tune_Active(void) {
     DoMethod(objApp->LSV_Tune_List, MUIM_List_GetEntry, index, &tune);
 
     if (tune) {
-      sprintf(buf, "\33b%s", tune->tu_Name);
+      sprintf(buf, "\33b%s", tune->name);
       set(objApp->TXT_Tune_Name, MUIA_Text_Contents, buf);
-      set(objApp->TXT_Tune_URL, MUIA_Text_Contents, tune->tu_Description);
-      sprintf(buf, "%s, %s, %s", tune->tu_Codec, tune->tu_BitRate,
-              tune->tu_Country);
+      set(objApp->TXT_Tune_URL, MUIA_Text_Contents, tune->url);
+      sprintf(buf, "%s, %s, %s", tune->codec, tune->bitrate,
+              tune->country);
       set(objApp->TXT_Tune_Details, MUIA_Text_Contents, buf);
 
       set(objApp->BTN_Tune_Play, MUIA_Disabled, FALSE);
@@ -257,7 +251,7 @@ BOOL APP_Tune_Save(void)
         if (tune)
         {
             // Create save message with tune name
-            GetTFFormattedString(buf, sizeof(buf), MSG_STATUS_FILE_SAVED, tune->tu_Name);
+            GetTFFormattedString(buf, sizeof(buf), MSG_STATUS_FILE_SAVED, tune->name);
             set(objApp->LAB_Tune_Result, MUIA_Text_Contents, buf);
         }
         else
@@ -287,7 +281,7 @@ BOOL APP_Tune_DblClick(void)
         if (tune)
         {
             // Start playing on double click
-            GetTFFormattedString(buf, sizeof(buf), MSG_STATUS_PLAYING, tune->tu_Name);
+            GetTFFormattedString(buf, sizeof(buf), MSG_STATUS_PLAYING, tune->name);
             set(objApp->LAB_Tune_Result, MUIA_Text_Contents, buf);
         }
     }
@@ -301,14 +295,12 @@ BOOL APP_Iconify(void) {
   set(objApp->App, MUIA_Application_Iconified, TRUE);
   return TRUE;
 }
-
 BOOL APP_Tune_Play(void)
 {
     LONG index;
-    static char buf[128];
     struct Tune *tune = NULL;
     
-    DEBUG("%s", "APP_Tune_Play()\n");
+    PutStr("APP_Tune_Play()\n");
     get(objApp->LSV_Tune_List, MUIA_List_Active, &index);
     
     if (index != MUIV_List_Active_Off)
@@ -316,30 +308,52 @@ BOOL APP_Tune_Play(void)
         DoMethod(objApp->LSV_Tune_List, MUIM_List_GetEntry, index, &tune);
         if (tune)
         {
-            // Show "Playing: [tune name]" message
-            GetTFFormattedString(buf, sizeof(buf), MSG_STATUS_PLAYING, tune->tu_Name);
-            set(objApp->LAB_Tune_Result, MUIA_Text_Contents, buf);
-        }
-        else
-        {
-            // Show error message
-            set(objApp->LAB_Tune_Result, MUIA_Text_Contents, 
-                GetTFString(MSG_ERR_START_PLAYBACK));
+            if (!IsAmigaAMPRunning())
+            {
+                set(objApp->LAB_Tune_Result, MUIA_Text_Contents, 
+                    GetTFString(MSG_ERR_AMIGAAMP_NOT_RUNNING));
+                return FALSE;
+            }
+            
+            if (OpenStreamInAmigaAMPWithName(tune->url, tune->name))
+            {
+                // Show "Playing: [tune name]" message
+                char buffer[256];
+                GetTFFormattedString(buffer, sizeof(buffer), 
+                    MSG_STATUS_PLAYING, tune->name);
+                set(objApp->LAB_Tune_Result, MUIA_Text_Contents, buffer);
+                return TRUE;
+            }
+            else
+            {
+                set(objApp->LAB_Tune_Result, MUIA_Text_Contents, 
+                    GetTFString(MSG_ERR_START_PLAYBACK));
+            }
         }
     }
     
-    return TRUE;
+    return FALSE;
 }
 
 BOOL APP_Tune_Stop(void)
 {
-    DEBUG("%s", "APP_Tune_Stop()\n");
+    PutStr("APP_Tune_Stop()\n");
     
-    // Show "Playback stopped" message
-    set(objApp->LAB_Tune_Result, MUIA_Text_Contents, 
-        GetTFString(MSG_ERR_PLAYBACK_STOPPED));
+    if (!IsAmigaAMPRunning())
+    {
+        set(objApp->LAB_Tune_Result, MUIA_Text_Contents, 
+            GetTFString(MSG_ERR_AMIGAAMP_NOT_RUNNING));
+        return FALSE;
+    }
     
-    return TRUE;
+    if (StopAmigaAMP())
+    {
+        set(objApp->LAB_Tune_Result, MUIA_Text_Contents, 
+            GetTFString(MSG_ERR_PLAYBACK_STOPPED));
+        return TRUE;
+    }
+    
+    return FALSE;
 }
 BOOL APP_Settings_API_Port_Dec(void)
 {
@@ -609,8 +623,8 @@ VOID CreateWindowMain(struct ObjApp *obj) {
   HSpace(10), Child, Label("Country"), Child, obj->CYC_Find_Country, Child,
   HSpace(10), Child, obj->BTN_Find, End;
 
-  group2 = GroupObject, MUIA_Frame, MUIV_Frame_Group, MUIA_FrameTitle,
-  "Tunes List", MUIA_Background, MUII_GroupBack, MUIA_Group_Horiz, FALSE,
+  group2 = GroupObject, MUIA_Frame, MUIV_Frame_Group,
+  MUIA_Background, MUII_GroupBack, MUIA_Group_Horiz, FALSE,
   MUIA_Group_SameWidth, TRUE, MUIA_Group_SameHeight, TRUE, Child, VGroup,
   MUIA_Group_SameWidth, TRUE, Child, obj->LSV_Tune_List = ListviewObject,
   MUIA_Listview_List, ListObject, MUIA_Frame, MUIV_Frame_InputList,
@@ -883,11 +897,18 @@ struct ObjApp *CreateApp(void) {
 
   return NULL;
 }
-void DisposeApp(struct ObjApp *obj) {
-  if (obj) {
-    if (obj->App) {
-      MUI_DisposeObject(obj->App);
+void DisposeApp(struct ObjApp *obj)
+{
+    if (obj)
+    {
+        if (obj->App)
+        {
+            MUI_DisposeObject(obj->App);
+        }
+        
+        // Free country configuration
+        FreeCountryConfig(&obj->countryConfig);
+        
+        FreeVec(obj);
     }
-    FreeVec(obj);
-  }
 }

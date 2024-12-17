@@ -17,6 +17,7 @@
 #include "../include/app.h"
 #include "../include/main.h"
 #include "../include/network.h"
+#include "../include/country_config.h"
 
 // Global variables
 static CONST_STRPTR Codecs[32];
@@ -112,30 +113,25 @@ BOOL APP_About_MUI(void) {
 BOOL APP_Find_Init(void) {
   DEBUG("%s", "APP_Find_Init()\n");
 
+
+    if (!LoadCountryConfig("PROGDIR:countries.cfg", &objApp->countryConfig))
+    {
+        PutStr("Failed to load country configuration\n");
+        return FALSE;
+    }
+
+    // Initialize cycle gadgets with country list
+    set(objApp->CYC_Find_Country, MUIA_Cycle_Entries, objApp->countryConfig.choices);
+
+
   // Initialize Codecs array
-  Codecs[0] = GetTFString(MSG_GUI_UNKNOWN);
+  Codecs[0] = "";
   Codecs[1] = "AAC";
   Codecs[2] = "MP3";
   Codecs[3] = "OGG";
   Codecs[4] = "FLAC";
   Codecs[5] = NULL;
 
-  // Initialize Countries array
-  Countries[0] = GetTFString(MSG_GUI_UNKNOWN);
-  Countries[1] = "AT - Austria";
-  Countries[2] = "CA - Canada";
-  Countries[3] = "CZ - Czech";
-  Countries[4] = "DE - Germany";
-  Countries[5] = "DK - Denmark";
-  Countries[6] = "ES - Spain";
-  Countries[7] = "FR - France";
-  Countries[8] = "GB - United";
-  Countries[9] = "JP - Japan";
-  Countries[10] = "NO - Norway";
-  Countries[11] = "PL - Poland";
-  Countries[12] = "SE - Sweden";
-  Countries[13] = "US";
-  Countries[14] = NULL;
 
   // Set initial values
   set(objApp->STR_Find_Name, MUIA_String_Contents, "");
@@ -160,10 +156,10 @@ BOOL APP_Find(void)
     ULONG httpsOnly, hideBroken;
     struct SearchParams params;
     struct APISettings settings;
-    struct RadioStation *stations;
-    int numEntries = 0;
+    struct Tune *stations;
+    LONG numEntries = 0;
     
-    PutStr("APP_Find()\n");
+    DEBUG("APP_Find()\n");
     
     // Get search parameters from GUI
     get(objApp->STR_Find_Name, MUIA_String_Contents, &name);
@@ -184,11 +180,20 @@ BOOL APP_Find(void)
     params.name = name;
     params.tag_list = tags;
     params.codec = Codecs[codec];
-    params.country_code = Countries[country];
+    // Add country code handling here
+    if (country > 0 && country < objApp->countryConfig.count)  // Skip first empty entry
+    {
+        params.country_code = objApp->countryConfig.entries[country].code;
+    }
+    else
+    {
+        params.country_code = NULL;  // No country filter
+    }
+    params.state = NULL;
     params.hidebroken = hideBroken;
     params.is_https = httpsOnly ? HTTPS_TRUE : HTTPS_ALL;
     params.limit = settings.limit;
-    params.state = NULL;  // Not using state search for now
+
     
     // Clear existing list
     DoMethod(objApp->LSV_Tune_List, MUIM_List_Clear);
@@ -199,32 +204,31 @@ BOOL APP_Find(void)
     sprintf(buff, "Settings %s %d", settings.host, settings.port);
     DEBUG("%s", buff);
     stations = SearchStations(&settings, &params, &numEntries);
-    if (stations)
+if (stations)
+{
+    for(int i = 0; i < numEntries; i++)
     {
-        struct Tune tune;
-        for(int i = 0; i < numEntries; i++)
-        {
+        // Allocate new tune structure for each entry
         struct Tune *tune = AllocVec(sizeof(struct Tune), MEMF_CLEAR);
         if (tune)
         {
             // Convert station to tune structure
-            tune->tu_Name = strdup(stations[i].name);
-            tune->tu_Codec = strdup(stations[i].codec);
+            tune->name = strdup(stations[i].name);
+            tune->codec = strdup(stations[i].codec);
             // Convert bitrate to string
             char bitrate[32];
             sprintf(bitrate, "%d", stations[i].bitrate);
-            tune->tu_BitRate = strdup(bitrate);
-            tune->tu_Country = strdup(stations[i].country);
-            tune->tu_Description = strdup(stations[i].url);
+            tune->bitrate = strdup(bitrate);
+            tune->country = strdup(stations[i].country);
+            tune->url = strdup(stations[i].url);
 
             DoMethod(objApp->LSV_Tune_List, MUIM_List_InsertSingle, tune, MUIV_List_Insert_Bottom);
         }
-        }
-        
-        // Free stations array
-        free(stations);
     }
     
+    // Free stations array
+    free(stations);
+}
     set(objApp->LSV_Tune_List, MUIA_List_Quiet, FALSE);
     
     // Update result count and display
