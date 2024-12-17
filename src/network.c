@@ -28,6 +28,7 @@ struct RadioStation *SearchStations(const struct APISettings *settings,
                                   const struct SearchParams *params,
                                   LONG *count)
 {
+
     char *url = NULL;
     char *response = NULL;
     struct RadioStation *stations = NULL;
@@ -39,6 +40,7 @@ struct RadioStation *SearchStations(const struct APISettings *settings,
         UpdateStatusMessage(GetTFString(MSG_FAILED_CREATE_REQUEST));
         return NULL;
     }
+    DEBUG("%s", url);
 
     // Make the HTTP request
     response = make_http_request(settings, url);
@@ -80,18 +82,26 @@ void RadioStationToTune(const struct RadioStation *station, struct Tune *tune)
 
 BOOL InitNetworkSystem(void)
 {
-    // Initialize socket library if needed
-    struct Library *SocketBase;
+    DEBUG("Initializing network system\n");
     
-    DEBUG("%s", "Initializing network system\n");
-    
-    SocketBase = OpenLibrary("bsdsocket.library", 4);
-    if (!SocketBase)
+    if (!(SocketBase = OpenLibrary("bsdsocket.library", 4))) 
     {
-        DEBUG("%s", "Failed to open bsdsocket.library\n");
+        DEBUG("Failed to open bsdsocket.library\n");
         return FALSE;
     }
     
+    // Initialize socket library
+    if (SocketBaseTags(SBTM_SETVAL(SBTC_ERRNOPTR(sizeof(errno))), (ULONG)&errno,
+                      SBTM_SETVAL(SBTC_LOGTAGPTR), (ULONG)"TuneFinderMUI",
+                      TAG_DONE))
+    {
+        DEBUG("Failed to initialize socket library\n");
+        CloseLibrary(SocketBase);
+        SocketBase = NULL;
+        return FALSE;
+    }
+
+    DEBUG("Network system initialized\n");
     return TRUE;
 }
 
@@ -280,10 +290,9 @@ char *make_http_request(const struct APISettings *settings, const char *path) {
       goto cleanup;
     }
   }
-
+  
   snprintf(msg, MAX_STATUS_MSG_LEN, "Resolving host: %s", settings->host);
   DEBUG("Resolving host: %s", settings->host);
-
   server = gethostbyname(settings->host);
   if (!server) {
     UpdateStatusMessage(GetTFString(MSG_FAILED_RESOLV_HOST));
@@ -293,7 +302,7 @@ char *make_http_request(const struct APISettings *settings, const char *path) {
   memset(&server_addr, 0, sizeof(server_addr));
   server_addr.sin_family = AF_INET;
   memcpy(&server_addr.sin_addr.s_addr, server->h_addr, server->h_length);
-  server_addr.sin_port = htons(settings->port);
+  server_addr.sin_port = htons(API_PORT_DEFAULT);
 
   struct timeval timeout;
   timeout.tv_sec = 30;

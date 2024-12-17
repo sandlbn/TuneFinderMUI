@@ -30,16 +30,6 @@ struct RadioStation {
     int bitrate;
 };
 
-struct ExtNode {
-    struct Node node;
-    char *displayText;
-    char *name;
-    char *url;
-    char *codec;
-    char *country;
-    int bitrate;
-};
-
 void *allocate(size_t size, int type);
 void deallocate(void *ptr, int type);
 void free_stations(struct RadioStation *stations, int count);

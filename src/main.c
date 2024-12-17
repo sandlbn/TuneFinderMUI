@@ -134,11 +134,11 @@ BOOL APP_Find_Init(void) {
   Countries[10] = "NO - Norway";
   Countries[11] = "PL - Poland";
   Countries[12] = "SE - Sweden";
-  Countries[13] = "US - United States";
+  Countries[13] = "US";
   Countries[14] = NULL;
 
   // Set initial values
-  set(objApp->STR_Find_Name, MUIA_String_Contents, "Chillout");
+  set(objApp->STR_Find_Name, MUIA_String_Contents, "");
   set(objApp->STR_Find_Tags, MUIA_String_Contents, "");
   set(objApp->CYC_Find_Codec, MUIA_Cycle_Entries, Codecs);
   set(objApp->CYC_Find_Codec, MUIA_Cycle_Active, 2);
@@ -146,8 +146,8 @@ BOOL APP_Find_Init(void) {
   set(objApp->CYC_Find_Country, MUIA_Cycle_Active, 13);
   set(objApp->CHK_Find_HTTPS_Only, MUIA_Selected, FALSE);
   set(objApp->CHK_Find_Hide_Broken, MUIA_Selected, TRUE);
-    set(objApp->LAB_Tune_Result, MUIA_Text_Contents, 
-        GetTFString(MSG_STATE_READY));  // "Ready"
+  set(objApp->LAB_Tune_Result, MUIA_Text_Contents, 
+  GetTFString(MSG_STATE_READY));  // "Ready"
 
   return TRUE;
 }
@@ -174,10 +174,12 @@ BOOL APP_Find(void)
     get(objApp->CHK_Find_Hide_Broken, MUIA_Selected, &hideBroken);
     
     // Get settings
-    get(objApp->STR_Settings_API_Host, MUIA_String_Contents, &settings.host);
-    get(objApp->STR_Settings_API_Port, MUIA_String_Integer, &settings.port);
-    get(objApp->STR_Settings_API_Limit, MUIA_String_Integer, &settings.limit);
-    
+    //get(objApp->STR_Settings_API_Host, MUIA_String_Contents, &settings.host);
+    //get(objApp->STR_Settings_API_Port, MUIA_String_Integer, &settings.port);
+    //get(objApp->STR_Settings_API_Limit, MUIA_String_Integer, &settings.limit);
+    strcpy(settings.host, API_HOST_DEFAULT);
+    settings.port = API_PORT_DEFAULT;
+    settings.limit = 100;
     // Setup search parameters
     params.name = name;
     params.tag_list = tags;
@@ -193,20 +195,30 @@ BOOL APP_Find(void)
     set(objApp->LSV_Tune_List, MUIA_List_Quiet, TRUE);
 
     // Perform search
+    static char buff[100];
+    sprintf(buff, "Settings %s %d", settings.host, settings.port);
+    DEBUG("%s", buff);
     stations = SearchStations(&settings, &params, &numEntries);
     if (stations)
     {
         struct Tune tune;
         for(int i = 0; i < numEntries; i++)
         {
+        struct Tune *tune = AllocVec(sizeof(struct Tune), MEMF_CLEAR);
+        if (tune)
+        {
             // Convert station to tune structure
-            tune.tu_Name = stations[i].name;
-            tune.tu_BitRate = stations[i].bitrate;
-            tune.tu_Codec = stations[i].codec;
-            tune.tu_Country = stations[i].country;
-            tune.tu_Description = stations[i].url;
+            tune->tu_Name = strdup(stations[i].name);
+            tune->tu_Codec = strdup(stations[i].codec);
+            // Convert bitrate to string
+            char bitrate[32];
+            sprintf(bitrate, "%d", stations[i].bitrate);
+            tune->tu_BitRate = strdup(bitrate);
+            tune->tu_Country = strdup(stations[i].country);
+            tune->tu_Description = strdup(stations[i].url);
 
-            DoMethod(objApp->LSV_Tune_List, MUIM_List_InsertSingle, &tune, MUIV_List_Insert_Bottom);
+            DoMethod(objApp->LSV_Tune_List, MUIM_List_InsertSingle, tune, MUIV_List_Insert_Bottom);
+        }
         }
         
         // Free stations array
