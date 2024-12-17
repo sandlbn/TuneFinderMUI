@@ -116,7 +116,7 @@ BOOL APP_Find_Init(void) {
 
     if (!LoadCountryConfig("PROGDIR:countries.cfg", &objApp->countryConfig))
     {
-        PutStr("Failed to load country configuration\n");
+        DEBUG("Failed to load country configuration\n");
         return FALSE;
     }
 
@@ -158,6 +158,7 @@ BOOL APP_Find(void)
     struct APISettings settings;
     struct Tune *stations;
     LONG numEntries = 0;
+    ULONG startTime, endTime;
     
     DEBUG("APP_Find()\n");
     
@@ -169,6 +170,9 @@ BOOL APP_Find(void)
     get(objApp->CHK_Find_HTTPS_Only, MUIA_Selected, &httpsOnly);
     get(objApp->CHK_Find_Hide_Broken, MUIA_Selected, &hideBroken);
     
+
+    startTime = IntuitionBase->Seconds;
+
     // Get settings
     //get(objApp->STR_Settings_API_Host, MUIA_String_Contents, &settings.host);
     //get(objApp->STR_Settings_API_Port, MUIA_String_Integer, &settings.port);
@@ -204,10 +208,10 @@ BOOL APP_Find(void)
     sprintf(buff, "Settings %s %d", settings.host, settings.port);
     DEBUG("%s", buff);
     stations = SearchStations(&settings, &params, &numEntries);
-if (stations)
-{
-    for(int i = 0; i < numEntries; i++)
+    if (stations)
     {
+      for(int i = 0; i < numEntries; i++)
+      {
         // Allocate new tune structure for each entry
         struct Tune *tune = AllocVec(sizeof(struct Tune), MEMF_CLEAR);
         if (tune)
@@ -217,7 +221,7 @@ if (stations)
             tune->codec = strdup(stations[i].codec);
             // Convert bitrate to string
             char bitrate[32];
-            sprintf(bitrate, "%d", stations[i].bitrate);
+            sprintf(bitrate, "%ld", stations[i].bitrate);
             tune->bitrate = strdup(bitrate);
             tune->country = strdup(stations[i].country);
             tune->url = strdup(stations[i].url);
@@ -229,12 +233,11 @@ if (stations)
     // Free stations array
     free(stations);
 }
+    endTime = IntuitionBase->Seconds;
+    ULONG duration = endTime - startTime;
     set(objApp->LSV_Tune_List, MUIA_List_Quiet, FALSE);
-    
-    // Update result count and display
-    get(objApp->LSV_Tune_List, MUIA_List_Entries, &numEntries);
-    sprintf(buf, "Found %d tune(s), in 0.8 second(s) [Limit: %lu].", 
-            numEntries, settings.limit);
+    sprintf(buf, "Found %ld tune(s), in %lu second(s) [Limit: %lu].", 
+            numEntries, duration, settings.limit);
     set(objApp->LAB_Tune_Result, MUIA_Text_Contents, buf);
     
     set(objApp->LSV_Tune_List, MUIA_List_Active, MUIV_List_Active_Top);
@@ -256,7 +259,7 @@ int main(void) {
     // Initialize network
     if (!InitNetworkSystem())
     {
-        PutStr("Failed to initialize network system\n");
+        DEBUG("Failed to initialize network system\n");
         CleanupLocaleSystem();
         return RETURN_FAIL;
     }

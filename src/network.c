@@ -47,7 +47,6 @@ struct Tune *SearchStations(const struct APISettings *settings,
         return NULL;
     }
 
-    // Modify parse_stations_json to return Tune instead of RadioStation
     tunes = parse_stations_json(response, count);
     free(response);
 

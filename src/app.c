@@ -300,7 +300,7 @@ BOOL APP_Tune_Play(void)
     LONG index;
     struct Tune *tune = NULL;
     
-    PutStr("APP_Tune_Play()\n");
+    DEBUG("APP_Tune_Play()\n");
     get(objApp->LSV_Tune_List, MUIA_List_Active, &index);
     
     if (index != MUIV_List_Active_Off)
@@ -337,7 +337,7 @@ BOOL APP_Tune_Play(void)
 
 BOOL APP_Tune_Stop(void)
 {
-    PutStr("APP_Tune_Stop()\n");
+    DEBUG("APP_Tune_Stop()\n");
     
     if (!IsAmigaAMPRunning())
     {
