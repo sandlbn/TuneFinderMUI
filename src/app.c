@@ -666,7 +666,7 @@ VOID CreateWindowMain(struct ObjApp *obj) {
            obj->CHK_Find_HTTPS_Only, obj->CHK_Find_Hide_Broken, obj->BTN_Find,
            obj->LSV_Tune_List, obj->BTN_Tune_Play, obj->BTN_Tune_Stop,
            obj->BTN_Tune_Save, obj->BTN_Save, obj->BTN_Fav_Add, obj->BTN_Fav_Remove,
-           obj->BTN_Quit, 0);
+           obj->BTN_Quit, obj->WIN_Settings, 0);
 }
 void CreateWindowMainEvents(struct ObjApp *obj) {
   // Buttons
@@ -725,19 +725,26 @@ void CreateWindowSettings(struct ObjApp *obj) {
         MUIA_Frame, MUIV_Frame_String,
         MUIA_String_MaxLen, 256,
   End;
-    obj->BTN_Settings_AmigaAmp_Browse = SimpleButton(GetTFString(MSG_OPTION_BROWSE));  // "Browse"
+  obj->BTN_Settings_AmigaAmp_Browse = SimpleButton(GetTFString(MSG_OPTION_BROWSE));  // "Browse"
 
-    APTR pathGroup = HGroup,
-        Child, obj->STR_Settings_AmigaAmp,
-        Child, obj->BTN_Settings_AmigaAmp_Browse,
-    End;
+  APTR pathGroup = HGroup,
+      Child, obj->STR_Settings_AmigaAmp,
+      Child, obj->BTN_Settings_AmigaAmp_Browse,
+  End;
 
   obj->CHK_Settings_Iconify = CheckMark(FALSE);
+
+  APTR iconifyGroup = HGroup,
+      MUIA_Group_SameWidth, FALSE,
+      Child, obj->CHK_Settings_Iconify,
+      Child, HSpace(0),
+      MUIA_Weight, 200,    
+  End;
   // Host (URI string)
   obj->STR_Settings_API_Host = StringObject, MUIA_Frame, MUIV_Frame_String,
   MUIA_String_AdvanceOnCR, TRUE, MUIA_String_Accept, API_HOST_ACCEPT,
   MUIA_String_Format, MUIV_String_Format_Left, MUIA_String_MaxLen,
-  API_HOST_MAX_LEN, MUIA_Weight, 200, End;
+  API_HOST_MAX_LEN,MUIA_FixWidthTxt, "wwwwwwwwwwwwwwwwwwwwwwwwww", End;
 
   // Port (Integer 0 to 65535)
   obj->STR_Settings_API_Port = StringObject, MUIA_Frame, MUIV_Frame_String,
@@ -781,36 +788,45 @@ void CreateWindowSettings(struct ObjApp *obj) {
   obj->BTN_Settings_API_Limit_Inc, Child, obj->BTN_Settings_API_Limit_Dec,
   Child, obj->BTN_Settings_API_Limit_Spc, End;
 
-  // Groups
-group1 = GroupObject,
-    MUIA_Frame, MUIV_Frame_Group,
-    MUIA_FrameTitle, GetTFString(MSG_STATE_SETTINGS),    // "Settings"
-    MUIA_Group_SameWidth, FALSE,
-    MUIA_Group_Horiz, FALSE,
-    MUIA_Group_Columns, 2,
-    Child, Label(GetTFString(MSG_OPTION_API_HOST)),      // "API Host :"
-    Child, obj->STR_Settings_API_Host,
-    Child, Label(GetTFString(MSG_OPTION_API_PORT)),      // "API Port :"
-    Child, child1,
-    Child, Label(GetTFString(MSG_GUI_LIMIT)),           // "API Limit :"
-    Child, child2,
-    Child, Label(GetTFString(MSG_OPTION_SELECT_PROGRAM)), // "AmigaAmp Path :"
-    Child, pathGroup,
-    Child, Label(GetTFString(MSG_OPTION_ICONIFY_AMIGAAMP)), // "Iconify AmigaAmp :"
-    Child, obj->CHK_Settings_Iconify,
-End;
-
-  group2 = GroupObject, MUIA_Group_Rows, 1, Child, obj->BTN_Settings_Save,
-  Child, HSpace(0), Child, obj->BTN_Settings_Cancel, End;
-
-  group0 = GroupObject, MUIA_Group_Columns, 1, Child, group1, Child, group2,
-  End;
-
-  // Window
-  obj->WIN_Settings = WindowObject, MUIA_Window_Title, GetTFString(MSG_STATE_SETTINGS),
-  MUIA_Window_ID, APP_ID_WIN_SETTINGS, MUIA_Window_AppWindow, FALSE, MUIA_Window_Width, 500, MUIA_Window_DragBar, TRUE, MUIA_Window_CloseGadget, TRUE,  
-  MUIA_Window_NoMenus, TRUE, MUIA_Window_Width, MUIV_Window_Width_Scaled,
-  WindowContents, group0, End;
+    group1 = ColGroup(2),
+        MUIA_Frame, MUIV_Frame_Group,
+        MUIA_HorizWeight, 200, 
+        Child, Label(GetTFString(MSG_OPTION_API_HOST)),
+        Child, obj->STR_Settings_API_Host,
+        Child, Label(GetTFString(MSG_OPTION_API_PORT)),
+        Child, child1,
+        Child, Label(GetTFString(MSG_GUI_LIMIT)), 
+        Child, child2,
+        Child, Label(GetTFString(MSG_OPTION_SELECT_PROGRAM)),
+        Child, pathGroup,
+        Child, Label(GetTFString(MSG_OPTION_ICONIFY_AMIGAAMP)),
+       Child, iconifyGroup,
+    End;
+    
+    group2 = HGroup,
+        Child, obj->BTN_Settings_Save,
+        Child, HVSpace,
+        Child, obj->BTN_Settings_Cancel,
+    End;
+    
+    // Main group
+    group0 = VGroup,
+        Child, VSpace(2),
+        Child, group1,
+        Child, VSpace(2),
+        Child, group2,
+        Child, VSpace(2),
+    End;
+    
+    obj->WIN_Settings = WindowObject,
+        MUIA_Window_Title, GetTFString(MSG_STATE_SETTINGS),
+        MUIA_Window_ID, APP_ID_WIN_SETTINGS,
+        MUIA_Window_SizeGadget, TRUE,
+        MUIA_Window_DragBar, TRUE,
+        MUIA_Window_CloseGadget, TRUE,
+        MUIA_Window_DepthGadget, TRUE,
+        WindowContents, group0,
+    End;
 
   // Cycle Chain
   DoMethod(obj->WIN_Settings, MUIM_Window_SetCycleChain,
@@ -853,50 +869,53 @@ void CreateWindowSettingsEvents(struct ObjApp *obj) {
 }
 
 struct ObjApp *CreateApp(void) {
-  struct ObjApp *obj;
+    struct ObjApp *obj;
 
-  DEBUG("%s", "Creating App...\n");
+    DEBUG("%s", "Creating App...\n");
 
-  if ((obj = AllocVec(sizeof(struct ObjApp), MEMF_PUBLIC | MEMF_CLEAR))) {
-    DEBUG("%s", "Memory allocated\n");
+    if ((obj = AllocVec(sizeof(struct ObjApp), MEMF_PUBLIC | MEMF_CLEAR))) {
+        DEBUG("%s", "Memory allocated\n");
 
-    // Create main window
-    CreateMenu(obj);
-    CreateWindowMain(obj);
-    CreateWindowSettings(obj);
+        /* Create main window */
+        CreateMenu(obj);
+        CreateWindowMain(obj);
+        CreateWindowSettings(obj);
 
-    if (obj->WIN_Main) {
-      // Create Application object
-      obj->App = ApplicationObject, MUIA_Application_Title, APP_NAME,
-      MUIA_Application_Version, APP_VERSTRING, MUIA_Application_Copyright,
-      APP_COPYRIGHT, MUIA_Application_Author, APP_AUTHORS,
-      MUIA_Application_Description, APP_DESCRIPTION, MUIA_Application_Base,
-      APP_NAME, MUIA_Application_Menustrip, obj->MN_Main, SubWindow,
-      obj->WIN_Main, SubWindow, obj->WIN_Settings, End;
+        if (obj->WIN_Main) {
+            /* Create Application object */
+            obj->App = ApplicationObject,
+                MUIA_Application_Title,        APP_NAME,
+                MUIA_Application_Version,      APP_VERSTRING,
+                MUIA_Application_Copyright,    APP_COPYRIGHT,
+                MUIA_Application_Author,       APP_AUTHORS,
+                MUIA_Application_Description,  APP_DESCRIPTION,
+                MUIA_Application_Base,         APP_NAME,
+                MUIA_Application_Menustrip,    obj->MN_Main,
+                SubWindow,                     obj->WIN_Main,
+                SubWindow,                     obj->WIN_Settings,
+                End;
 
-      if (obj->App) {
-        DEBUG("%s", "Application object created\n");
+            if (obj->App) {
+                DEBUG("%s", "Application object created\n");
 
-        // Create MUI events
-        DEBUG("%s", "Creating Menu Events...\n");
-        CreateMenuEvents(obj);
+                /* Create MUI events */
+                DEBUG("%s", "Creating Menu Events...\n");
+                CreateMenuEvents(obj);
 
-        DEBUG("%s", "Creating Window Events...\n");
-        CreateWindowMainEvents(obj);
+                DEBUG("%s", "Creating Window Events...\n");
+                CreateWindowMainEvents(obj);
 
-        DEBUG("%s", "Creating Settings Events...\n");
-        CreateWindowSettingsEvents(obj);
+                DEBUG("%s", "Creating Settings Events...\n");
+                CreateWindowSettingsEvents(obj);
 
-        DEBUG("%s", "App creation complete\n");
-        return obj;
-      }
+                DEBUG("%s", "App creation complete\n");
+                return obj;
+            }
+        }
     }
-
-    FreeVec(obj);
-  }
-
-  return NULL;
+    return NULL;
 }
+
 void DisposeApp(struct ObjApp *obj)
 {
     if (obj)
