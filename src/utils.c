@@ -15,9 +15,12 @@
 #include <string.h>
 #include "../include/main.h"
 
+struct ObjApp *objApp;  // Global variable definition
+
 void *allocate(size_t size, int type) { return AllocVec(size, MEMF_CLEAR); }
 
 void deallocate(void *ptr, int type) { FreeVec(ptr); }
+
 
 
 static inline int isPrintableASCII(unsigned char c) {
@@ -140,3 +143,10 @@ void cleanNonAscii(char *dst, const char *src, size_t maxLen) {
     strcpy(dst, "Unknown");
   }
 } 
+void UpdateStatusMessage(const char *msg)
+{
+    if (objApp && objApp->LAB_Tune_Result)
+    {
+        set(objApp->LAB_Tune_Result, MUIA_Text_Contents, msg);
+    }
+}

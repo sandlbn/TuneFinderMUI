@@ -25,6 +25,7 @@ SOURCES = \
     $(SRCDIR)/main.c \
     $(SRCDIR)/app.c \
     $(SRCDIR)/network.c \
+    $(SRCDIR)/settings.c \
     $(SRCDIR)/locale.c \
 	$(SRCDIR)/country_config.c \
 	$(SRCDIR)/utils.c \

@@ -137,7 +137,17 @@ static const char *built_in_strings[] = {
     "Failed to connect to server",        // 100
     "Failed to send request",             // 101
     "Connection timeout",                 // 102
-
+    // Settings messages (120-129)
+    "Failed to create host settings file: %s",  // 120
+    "Failed to create port settings file: %s",  // 121
+    "Failed to write port setting",             // 122
+    "Failed to create limit settings file: %s", // 123
+    "Failed to write limit setting",            // 124
+    "Failed to create autostart settings file: %s", // 125
+    "Failed to write autostart setting",        // 126
+    "Settings saved: %s:%u (limit: %u)",        // 127
+    "Invalid port number, using default: %d",   // 128
+    "Settings loaded",                          // 129
 
     NULL  // Final terminator
 };

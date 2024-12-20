@@ -21,6 +21,7 @@
 #include "../include/locale.h"
 #include "../include/amigaamp.h"
 #include "../include/country_config.h"
+#include "../include/settings.h"
 
 #include "SDI_compiler.h"
 #include "SDI_hook.h"
@@ -167,14 +168,23 @@ BOOL APP_Tune_Details_Init(void) {
   return TRUE;
 }
 
-BOOL APP_Settings_Init(void) {
-  DEBUG("%s", "APP_Settings_Init()\n");
-
-  set(objApp->STR_Settings_API_Host, MUIA_String_Contents, API_HOST_DEFAULT);
-  set(objApp->STR_Settings_API_Port, MUIA_String_Integer, API_PORT_DEFAULT);
-  set(objApp->STR_Settings_API_Limit, MUIA_String_Integer, API_LIMIT_DEFAULT);
-
-  return TRUE;
+BOOL APP_Settings_Init(void)
+{
+    struct APISettings settings;
+    
+    if (LoadSettings(&settings))
+    {
+        set(objApp->STR_Settings_API_Host, MUIA_String_Contents, settings.host);
+        set(objApp->STR_Settings_API_Port, MUIA_String_Integer, settings.port);
+        set(objApp->STR_Settings_API_Limit, MUIA_String_Integer, settings.limit);
+        set(objApp->STR_Settings_AmigaAmp, MUIA_String_Contents, settings.autostart);
+        set(objApp->CHK_Settings_Iconify, MUIA_Selected, settings.iconifyAmigaAMP);
+        set(objApp->CYC_Find_Country, MUIA_Cycle_Active, settings.countryCode);
+        set(objApp->CYC_Find_Codec, MUIA_Cycle_Active, settings.codec);
+        return TRUE;
+    }
+    
+    return FALSE;
 }
 
 BOOL APP_Settings_API_Limit_Inc(void)
@@ -447,25 +457,31 @@ BOOL APP_Settings_Cancel(void)
     return TRUE;
 }
 
-BOOL APP_Settings_Save(void) {
-  static char buf[512];
-  STRPTR apiHost;
-  ULONG apiPort, apiLimit;
+BOOL APP_Settings_Save(void)
+{
+    static char buf[512];
+    struct APISettings settings;
+    
+    // Get values from UI
+    get(objApp->STR_Settings_API_Host, MUIA_String_Contents, &settings.host);
+    get(objApp->STR_Settings_API_Port, MUIA_String_Integer, &settings.port);
+    get(objApp->STR_Settings_API_Limit, MUIA_String_Integer, &settings.limit);
+    get(objApp->STR_Settings_AmigaAmp, MUIA_String_Contents, &settings.autostart);
+    get(objApp->CHK_Settings_Iconify, MUIA_Selected, &settings.iconifyAmigaAMP);
+    get(objApp->CYC_Find_Country, MUIA_Cycle_Active, &settings.countryCode);
+    get(objApp->CYC_Find_Codec, MUIA_Cycle_Active, &settings.codec);
+    
+    if (SaveSettings(&settings))
+    {
+        set(objApp->WIN_Settings, MUIA_Window_Open, FALSE);
+        GetTFFormattedString(buf, sizeof(buf), MSG_STATUS_SETTINGS_SAVED_HOST, 
+                        settings.host , settings.port);
+        DEBUG("%s", buf);
 
-  DEBUG("%s", "APP_Settings_Save()\n");
-
-  get(objApp->STR_Settings_API_Host, MUIA_String_Contents, &apiHost);
-  get(objApp->STR_Settings_API_Port, MUIA_String_Integer, &apiPort);
-  get(objApp->STR_Settings_API_Limit, MUIA_String_Integer, &apiLimit);
-
-  GetTFFormattedString(buf, sizeof(buf), MSG_STATUS_SETTINGS_SAVED_HOST, 
-                        apiHost, apiPort);
-  DEBUG("%s", buf);
-
-
-  set(objApp->WIN_Settings, MUIA_Window_Open, FALSE);
-
-  return TRUE;
+        return TRUE;
+    }
+    
+    return FALSE;
 }
 
 BOOL APP_Settings_API_Limit_Dec(void)

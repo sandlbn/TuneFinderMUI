@@ -8,6 +8,10 @@ struct APISettings {
     char host[256];
     ULONG port;
     ULONG limit;
+    char autostart[256];
+    BOOL iconifyAmigaAMP;
+    LONG countryCode;
+    LONG codec;
 };
 
 struct SearchParams {

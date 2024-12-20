@@ -13,17 +13,11 @@
 
 #include "../include/locale.h"
 #include "../include/network.h"
-
+#include "../include/utils.h"
 struct ObjApp *objApp;
 struct Library *SocketBase;
 
-void UpdateStatusMessage(const char *msg)
-{
-    if (objApp && objApp->LAB_Tune_Result)
-    {
-        set(objApp->LAB_Tune_Result, MUIA_Text_Contents, msg);
-    }
-}
+
 struct Tune *SearchStations(const struct APISettings *settings, 
                           const struct SearchParams *params,
                           LONG *count)

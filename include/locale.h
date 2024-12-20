@@ -107,6 +107,17 @@ enum {
     MSG_FAILED_CONN_SERV = 100,
     MSG_FAILED_SEND_REQ = 101,
     MSG_TIMEOUT = 102,
+    MSG_ERR_FAILED_CREAT_HOST_SET_FILE = 120,  // "Failed to create host settings file: %s"
+    MSG_FAILED_CREAT_PORT_FILE,                // "Failed to create port settings file: %s"
+    MSG_FAILED_WRITE_PORT_SET,                 // "Failed to write port setting"
+    MSG_FAILED_CREAT_LIMIT_FILE,               // "Failed to create limit settings file: %s"
+    MSG_FAILED_WRITE_LIMIT_SET,                // "Failed to write limit setting"
+    MSG_FAILED_CREAT_AUTO_FILE,                // "Failed to create autostart settings file: %s"
+    MSG_FAILED_WRITE_AUTO_SET,                 // "Failed to write autostart setting"
+    MSG_SET_SAVED,                             // "Settings saved: %s:%u (limit: %u)"
+    MSG_INVALID_PORT,                          // "Invalid port number, using default: %d"
+    MSG_SETTINGS_LOADED,                       // "Settings loaded"
+
 
 };
 
