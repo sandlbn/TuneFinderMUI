@@ -3,6 +3,7 @@
 
 #include <exec/types.h>
 #include "main.h"
+#include "data.h"
 
 // Main App functions
 struct ObjApp *CreateApp(void);
@@ -40,6 +41,9 @@ BOOL APP_Tune_Stop(void);
 BOOL APP_Tune_Save(void);
 BOOL APP_Fav_Add(void);
 BOOL APP_Fav_Remove(void);
+BOOL APP_StartupAmigaAMP(const struct APISettings *settings);
+BOOL APP_ShutdownAmigaAMP(void);
+BOOL WaitAndIconifyAmigaAMP(void);
 
 // Internal functions declarations
 void CreateMenu(struct ObjApp *obj);

@@ -199,7 +199,7 @@ char *build_search_url(const struct APISettings *settings,
     {
         url[pos - 1] = '\0';
     }
-    
+    DEBUG("%s", url);
     return url;
 }
 static void UpdateSearchStatus(int chunk_count) {

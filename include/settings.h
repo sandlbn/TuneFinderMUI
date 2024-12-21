@@ -3,7 +3,7 @@
 
 #include <exec/types.h>
 #include "data.h" 
-#define ENV_PATH "ENVARC:TuneFinder"
+extern const struct APISettings DEFAULT_SETTINGS;
 #define TUNEFINDER_DIR "ENVARC:TuneFinder/"
 #define CONFIG_PATH "ENVARC:TuneFinder/"
 #define FULL_COUNTRY_CONFIG_PATH "ENVARC:TuneFinder/countries.cfg"

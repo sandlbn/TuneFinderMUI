@@ -12,6 +12,10 @@
 #include <proto/intuition.h>
 #include <proto/muimaster.h>
 #include <proto/utility.h>
+#include <proto/dos.h>
+#include <dos/dostags.h>
+#include <dos/dosextens.h>  
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -48,6 +52,69 @@ HOOKPROTONH(DisplayCode, VOID, char **array, struct Tune *tune) {
   }
 }
 MakeStaticHook(DisplayHook, DisplayCode);
+
+
+BOOL APP_StartupAmigaAMP(const struct APISettings *settings)
+{
+    DEBUG("APP_StartupAmigaAMP()");
+    
+    if (!settings || settings->autostart[0] == '\0') {
+        DEBUG("No autostart path configured");
+        return FALSE;
+    }
+
+    // Check if AmigaAMP is already running
+    if (IsAmigaAMPRunning()) {
+        DEBUG("AmigaAMP is already running");
+        // If iconification requested, just iconify
+        if (settings->iconifyAmigaAMP) {
+            return SendCommandToAmigaAMP("ICONIFY");
+        }
+        return TRUE;
+    }
+
+    // Launch AmigaAMP
+    DEBUG("Launching AmigaAMP: %s", settings->autostart);
+    
+    SystemTags(settings->autostart,
+        SYS_Input, NULL,
+        SYS_Output, NULL,
+        SYS_Asynch, TRUE,
+        NP_Priority, 0,  // Normal priority
+        TAG_DONE);
+
+    // If iconification requested, wait and iconify
+    if (settings->iconifyAmigaAMP) {
+        return WaitAndIconifyAmigaAMP();
+    }
+
+    return TRUE;
+}
+
+BOOL APP_ShutdownAmigaAMP(void)
+{
+    DEBUG("APP_ShutdownAmigaAMP()");
+    
+    if (!IsAmigaAMPRunning()) {
+        DEBUG("AmigaAMP is not running");
+        return TRUE;
+    }
+
+    // Try to quit AmigaAMP gracefully
+    if (!SendCommandToAmigaAMP("QUIT")) {
+        DEBUG("Failed to send QUIT command to AmigaAMP");
+        return FALSE;
+    }
+
+    // Wait for AmigaAMP to close (optional)
+    int retries = 10;
+    while (retries > 0 && IsAmigaAMPRunning()) {
+        Delay(5); // Wait 100ms
+        retries--;
+    }
+
+    return !IsAmigaAMPRunning();
+}
 
 void CreateMenu(struct ObjApp *obj) {
   APTR menu1, menu2;
@@ -181,6 +248,11 @@ BOOL APP_Settings_Init(void)
         set(objApp->CHK_Settings_Iconify, MUIA_Selected, settings.iconifyAmigaAMP);
         set(objApp->CYC_Find_Country, MUIA_Cycle_Active, settings.countryCode);
         set(objApp->CYC_Find_Codec, MUIA_Cycle_Active, settings.codec);
+
+        if (!APP_StartupAmigaAMP(&settings)) {
+            DEBUG("Warning: Failed to start AmigaAMP");
+        }
+    
         return TRUE;
     }
     
@@ -459,31 +531,73 @@ BOOL APP_Settings_Cancel(void)
 
 BOOL APP_Settings_Save(void)
 {
-    static char buf[512];
     struct APISettings settings;
+    char *tempStr; // Temporary string pointer for MUI string objects
+    LONG tempLong; // Temporary long for numeric values
     
-    // Get values from UI
-    get(objApp->STR_Settings_API_Host, MUIA_String_Contents, &settings.host);
-    get(objApp->STR_Settings_API_Port, MUIA_String_Integer, &settings.port);
-    get(objApp->STR_Settings_API_Limit, MUIA_String_Integer, &settings.limit);
-    get(objApp->STR_Settings_AmigaAmp, MUIA_String_Contents, &settings.autostart);
-    get(objApp->CHK_Settings_Iconify, MUIA_Selected, &settings.iconifyAmigaAMP);
-    get(objApp->CYC_Find_Country, MUIA_Cycle_Active, &settings.countryCode);
-    get(objApp->CYC_Find_Codec, MUIA_Cycle_Active, &settings.codec);
+    // Initialize settings with defaults
+    memset(&settings, 0, sizeof(struct APISettings));
     
+    // Get host - using temporary string pointer
+    get(objApp->STR_Settings_API_Host, MUIA_String_Contents, &tempStr);
+    if (tempStr) {
+        strncpy(settings.host, tempStr, sizeof(settings.host)-1);
+        settings.host[sizeof(settings.host)-1] = '\0';
+        DEBUG("Host setting: %s", settings.host);
+    }
+
+    // Get port - using MUIA_String_Integer
+    get(objApp->STR_Settings_API_Port, MUIA_String_Integer, &tempLong);
+    settings.port = (ULONG)tempLong;
+    DEBUG("Port setting: %lu", settings.port);
+
+    // Get limit
+    get(objApp->STR_Settings_API_Limit, MUIA_String_Integer, &tempLong);
+    settings.limit = (ULONG)tempLong;
+    DEBUG("Limit setting: %lu", settings.limit);
+
+    // Get autostart path
+    get(objApp->STR_Settings_AmigaAmp, MUIA_String_Contents, &tempStr);
+    if (tempStr) {
+        strncpy(settings.autostart, tempStr, sizeof(settings.autostart)-1);
+        settings.autostart[sizeof(settings.autostart)-1] = '\0';
+        DEBUG("Autostart setting: %s", settings.autostart);
+    }
+
+    // Get iconify setting
+    get(objApp->CHK_Settings_Iconify, MUIA_Selected, &tempLong);
+    settings.iconifyAmigaAMP = (BOOL)tempLong;
+    
+    // Get country code
+    get(objApp->CYC_Find_Country, MUIA_Cycle_Active, &tempLong);
+    settings.countryCode = tempLong;
+    
+    // Get codec setting
+    get(objApp->CYC_Find_Codec, MUIA_Cycle_Active, &tempLong);
+    settings.codec = tempLong;
+
+    // Debug output of all settings before saving
+    DEBUG("Saving settings:");
+    DEBUG("Host: %s", settings.host);
+    DEBUG("Port: %lu", settings.port);
+    DEBUG("Limit: %lu", settings.limit);
+    DEBUG("Autostart: %s", settings.autostart);
+    DEBUG("Iconify: %d", settings.iconifyAmigaAMP);
+    DEBUG("Country: %ld", settings.countryCode);
+    DEBUG("Codec: %ld", settings.codec);
+
     if (SaveSettings(&settings))
     {
         set(objApp->WIN_Settings, MUIA_Window_Open, FALSE);
+        char buf[256];
         GetTFFormattedString(buf, sizeof(buf), MSG_STATUS_SETTINGS_SAVED_HOST, 
-                        settings.host , settings.port);
-        DEBUG("%s", buf);
-
+                            settings.host, settings.port);
+        set(objApp->LAB_Tune_Result, MUIA_Text_Contents, buf);
         return TRUE;
     }
     
     return FALSE;
 }
-
 BOOL APP_Settings_API_Limit_Dec(void)
 {
     LONG limit;
@@ -739,7 +853,7 @@ void CreateWindowSettings(struct ObjApp *obj) {
 
   obj->STR_Settings_AmigaAmp = StringObject,
         MUIA_Frame, MUIV_Frame_String,
-        MUIA_String_MaxLen, 256,
+        MUIA_String_MaxLen, MAX_PATH_LEN-1,
   End;
   obj->BTN_Settings_AmigaAmp_Browse = SimpleButton(GetTFString(MSG_OPTION_BROWSE));  // "Browse"
 
@@ -760,7 +874,8 @@ void CreateWindowSettings(struct ObjApp *obj) {
   obj->STR_Settings_API_Host = StringObject, MUIA_Frame, MUIV_Frame_String,
   MUIA_String_AdvanceOnCR, TRUE, MUIA_String_Accept, API_HOST_ACCEPT,
   MUIA_String_Format, MUIV_String_Format_Left, MUIA_String_MaxLen,
-  API_HOST_MAX_LEN,MUIA_FixWidthTxt, "wwwwwwwwwwwwwwwwwwwwwwwwww", End;
+  API_HOST_MAX_LEN, MUIA_String_Contents, API_HOST_DEFAULT, 
+  MUIA_FixWidthTxt, "wwwwwwwwwwwwwwwwwwwwwwwwww", End;
 
   // Port (Integer 0 to 65535)
   obj->STR_Settings_API_Port = StringObject, MUIA_Frame, MUIV_Frame_String,

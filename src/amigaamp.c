@@ -321,6 +321,7 @@ BOOL QuitAmigaAMP(void) {
     return SendCommandToAmigaAMP("QUIT");
 }
 
+
 BOOL WaitAndIconifyAmigaAMP(void) {
     BOOL success = FALSE;
     int retries = 20;  // Wait up to 2 seconds (20 * 100ms)

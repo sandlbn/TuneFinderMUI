@@ -17,6 +17,7 @@
 #include "../include/app.h"
 #include "../include/main.h"
 #include "../include/network.h"
+#include "../include/settings.h"
 #include "../include/country_config.h"
 
 // Global variables
@@ -114,11 +115,11 @@ BOOL APP_Find_Init(void) {
   DEBUG("%s", "APP_Find_Init()\n");
 
 
-    if (!LoadCountryConfig("PROGDIR:countries.cfg", &objApp->countryConfig))
-    {
+  if (!LoadCountryConfig("PROGDIR:countries.cfg", &objApp->countryConfig))
+  {
         DEBUG("Failed to load country configuration\n");
         return FALSE;
-    }
+  }
 
     // Initialize cycle gadgets with country list
     set(objApp->CYC_Find_Country, MUIA_Cycle_Entries, objApp->countryConfig.choices);
@@ -170,20 +171,19 @@ BOOL APP_Find(void)
     get(objApp->CHK_Find_HTTPS_Only, MUIA_Selected, &httpsOnly);
     get(objApp->CHK_Find_Hide_Broken, MUIA_Selected, &hideBroken);
     
-
     startTime = IntuitionBase->Seconds;
 
-    // Get settings
-    //get(objApp->STR_Settings_API_Host, MUIA_String_Contents, &settings.host);
-    //get(objApp->STR_Settings_API_Port, MUIA_String_Integer, &settings.port);
-    //get(objApp->STR_Settings_API_Limit, MUIA_String_Integer, &settings.limit);
-    strcpy(settings.host, API_HOST_DEFAULT);
-    settings.port = API_PORT_DEFAULT;
-    settings.limit = 100;
+    // Load current settings or use defaults
+    if (!LoadSettings(&settings)) {
+        // If load fails, use defaults
+        memcpy(&settings, &DEFAULT_SETTINGS, sizeof(struct APISettings));
+    }
+
     // Setup search parameters
     params.name = name;
     params.tag_list = tags;
     params.codec = Codecs[codec];
+    
     // Add country code handling here
     if (country > 0 && country < objApp->countryConfig.count)  // Skip first empty entry
     {
@@ -198,41 +198,42 @@ BOOL APP_Find(void)
     params.is_https = httpsOnly ? HTTPS_TRUE : HTTPS_ALL;
     params.limit = settings.limit;
 
-    
     // Clear existing list
     DoMethod(objApp->LSV_Tune_List, MUIM_List_Clear);
     set(objApp->LSV_Tune_List, MUIA_List_Quiet, TRUE);
 
     // Perform search
-    static char buff[100];
-    sprintf(buff, "Settings %s %d", settings.host, settings.port);
-    DEBUG("%s", buff);
+    DEBUG("Search settings - Host: %s, Port: %d, Limit: %d", 
+          settings.host, settings.port, settings.limit);
+          
     stations = SearchStations(&settings, &params, &numEntries);
     if (stations)
     {
-      for(int i = 0; i < numEntries; i++)
-      {
-        // Allocate new tune structure for each entry
-        struct Tune *tune = AllocVec(sizeof(struct Tune), MEMF_CLEAR);
-        if (tune)
+        for(int i = 0; i < numEntries; i++)
         {
-            // Convert station to tune structure
-            tune->name = strdup(stations[i].name);
-            tune->codec = strdup(stations[i].codec);
-            // Convert bitrate to string
-            char bitrate[32];
-            sprintf(bitrate, "%ld", stations[i].bitrate);
-            tune->bitrate = strdup(bitrate);
-            tune->country = strdup(stations[i].country);
-            tune->url = strdup(stations[i].url);
+            // Allocate new tune structure for each entry
+            struct Tune *tune = AllocVec(sizeof(struct Tune), MEMF_CLEAR);
+            if (tune)
+            {
+                // Convert station to tune structure
+                tune->name = strdup(stations[i].name);
+                tune->codec = strdup(stations[i].codec);
+                // Convert bitrate to string
+                char bitrate[32];
+                sprintf(bitrate, "%ld", stations[i].bitrate);
+                tune->bitrate = strdup(bitrate);
+                tune->country = strdup(stations[i].country);
+                tune->url = strdup(stations[i].url);
 
-            DoMethod(objApp->LSV_Tune_List, MUIM_List_InsertSingle, tune, MUIV_List_Insert_Bottom);
+                DoMethod(objApp->LSV_Tune_List, MUIM_List_InsertSingle, tune, 
+                        MUIV_List_Insert_Bottom);
+            }
         }
+        
+        // Free stations array
+        free(stations);
     }
-    
-    // Free stations array
-    free(stations);
-}
+
     endTime = IntuitionBase->Seconds;
     ULONG duration = endTime - startTime;
     set(objApp->LSV_Tune_List, MUIA_List_Quiet, FALSE);
@@ -404,9 +405,11 @@ int main(void) {
       DEBUG("%s", "Failed to create application!\n");
     }
 
-CleanupLibs();
+ 
+ APP_ShutdownAmigaAMP();
+ CleanupLibs();
  CleanupLocaleSystem();
  CleanupNetworkSystem();
-  return result;
+return result;
 }
 
