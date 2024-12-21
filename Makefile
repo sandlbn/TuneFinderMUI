@@ -29,6 +29,7 @@ SOURCES = \
     $(SRCDIR)/locale.c \
 	$(SRCDIR)/country_config.c \
 	$(SRCDIR)/utils.c \
+	$(SRCDIR)/favorites.c \
     $(SRCDIR)/amigaamp.c
 
 # Generate object files list

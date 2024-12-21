@@ -6,7 +6,8 @@
 #include "data.h"
 
 void free_labels(struct List* l);
-BOOL SaveToPLS(const char *filename);
+BOOL SaveStationsToPLS(const char *filename);
+BOOL SaveSingleStationToPLS(const struct Tune *station);
 void UpdateStatusMessage(const char *message);
 void SanitizeAmigaFilename(const char *input, char *output, size_t maxLen);
 BOOL EnsureSettingsPath(void);

@@ -123,7 +123,8 @@ BOOL APP_Find_Init(void) {
   Codecs[3] = "OGG";
   Codecs[4] = "FLAC";
   Codecs[5] = NULL;
-  if (!LoadCountryConfig("PROGDIR:countries.cfg", &objApp->countryConfig))
+  
+  if (!LoadCountryConfig(TUNEFINDER_DIR "countries.cfg", &objApp->countryConfig))
   {
         DEBUG("Failed to load country configuration\n");
         return FALSE;
@@ -362,6 +363,9 @@ int main(void) {
               break;
             case EVENT_SETTINGS_SAVE:
               APP_Settings_Save();
+              break;
+            case EVENT_FAVORITES:
+              APP_ShowFavorites();
               break;
             case EVENT_SETTINGS_CANCEL:
               APP_Settings_Cancel();

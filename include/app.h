@@ -22,6 +22,7 @@ BOOL APP_Find(void);
 BOOL APP_Iconify(void);
 BOOL APP_Save(void);
 BOOL APP_Sleep(void);
+BOOL APP_ShowFavorites(void);
 
 // Settings related functions
 BOOL APP_Settings(void);

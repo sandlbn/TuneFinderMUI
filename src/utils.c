@@ -10,11 +10,15 @@
 #include <proto/exec.h>
 #include <proto/gadtools.h>
 #include <proto/intuition.h>
+#include <libraries/asl.h>
+#include <clib/asl_protos.h>
+#include <proto/asl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "../include/main.h"
 #include "../include/settings.h"
+#include "../include/data.h"
 
 struct ObjApp *objApp;  // Global variable definition
 
@@ -87,8 +91,6 @@ void SanitizeAmigaFilename(const char *input, char *output, size_t maxLen) {
   }
 }
 
-
-
 BOOL EnsureSettingsPath(void) {
   BPTR lock;
   char msg[MAX_STATUS_MSG_LEN];
@@ -103,23 +105,23 @@ BOOL EnsureSettingsPath(void) {
   UnLock(lock);
 
   // Check if settings directory exists
-  lock = Lock(TUNEFINDER_DIR, ACCESS_READ);
+  lock = Lock(CONFIG_PATH, ACCESS_READ);
   if (lock) {
     UnLock(lock);
     return TRUE;
   }
 
   // Try to create settings directory
-  lock = CreateDir(ENV_PATH);
+  lock = CreateDir(CONFIG_PATH);
   if (lock) {
     UnLock(lock);
     snprintf(msg, MAX_STATUS_MSG_LEN, "Created settings directory: %s",
-             ENV_PATH);
+             CONFIG_PATH);
     DEBUG("%s", msg);
     return TRUE;
   }
 
-  snprintf(msg, MAX_STATUS_MSG_LEN, "Failed to create directory: %s", ENV_PATH);
+  snprintf(msg, MAX_STATUS_MSG_LEN, "Failed to create directory: %s", CONFIG_PATH);
   DEBUG("%s", msg);
   return FALSE;
 }
@@ -150,4 +152,102 @@ void UpdateStatusMessage(const char *msg)
     {
         set(objApp->LAB_Tune_Result, MUIA_Text_Contents, msg);
     }
+}
+
+BOOL SaveStationsToPLS(const char *filename)
+{
+    BPTR file;
+    LONG count = 0;
+    struct Tune *tune;
+    char buffer[512];
+    
+    // Get number of entries in list
+    get(objApp->LSV_Tune_List, MUIA_List_Entries, &count);
+    if (count == 0) {
+        DEBUG("No stations to save");
+        return FALSE;
+    }
+
+    file = Open(filename, MODE_NEWFILE);
+    if (!file) {
+        DEBUG("Failed to open file: %s", filename);
+        return FALSE;
+    }
+
+    // Write header
+    FPuts(file, "[playlist]\n");
+    sprintf(buffer, "NumberOfEntries=%ld\n", count);
+    FPuts(file, buffer);
+
+    // Write entries
+    for (LONG i = 0; i < count; i++) {
+        DoMethod(objApp->LSV_Tune_List, MUIM_List_GetEntry, i, &tune);
+        if (tune) {
+            sprintf(buffer, "File%ld=%s\n", i + 1, tune->url);
+            FPuts(file, buffer);
+            sprintf(buffer, "Title%ld=%s\n", i + 1, tune->name);
+            FPuts(file, buffer);
+            sprintf(buffer, "Length%ld=-1\n", i + 1);
+            FPuts(file, buffer);
+        }
+    }
+
+    Close(file);
+    return TRUE;
+}
+
+BOOL SaveSingleStationToPLS(const struct Tune *station)
+{
+    struct FileRequester *fileReq;
+    char filepath[256];
+    char sanitized_name[32];  // Increased for safety
+
+    if (!station) return FALSE;
+
+    // Sanitize the station name for use as filename
+    SanitizeAmigaFilename(station->name, sanitized_name, sizeof(sanitized_name) - 5); // Leave room for .pls
+    strcat(sanitized_name, ".pls");
+
+    fileReq = AllocAslRequestTags(ASL_FileRequest,
+        ASLFR_TitleText, "Save Station Playlist",
+        ASLFR_InitialFile, sanitized_name,
+        ASLFR_DoPatterns, TRUE,
+        ASLFR_InitialPattern, "#?.pls",
+        TAG_DONE);
+
+    if (!fileReq) return FALSE;
+
+    if (AslRequest(fileReq, NULL)) {
+        strcpy(filepath, fileReq->rf_Dir);
+        AddPart(filepath, fileReq->rf_File, sizeof(filepath));
+
+        // Add .pls extension if missing
+        if (!strstr(filepath, ".pls")) {
+            strcat(filepath, ".pls");
+        }
+
+        BPTR file = Open(filepath, MODE_NEWFILE);
+        if (file) {
+            char buffer[512];
+
+            FPuts(file, "[playlist]\n");
+            FPuts(file, "NumberOfEntries=1\n");
+            
+            sprintf(buffer, "File1=%s\n", station->url);
+            FPuts(file, buffer);
+            
+            sprintf(buffer, "Title1=%s\n", station->name);
+            FPuts(file, buffer);
+            
+            FPuts(file, "Length1=-1\n");
+            
+            Close(file);
+            DisplayBeep(NULL);
+            UpdateStatusMessage(GetTFString(MSG_STATUS_FILE_SAVED));
+            return TRUE;
+        }
+    }
+
+    FreeAslRequest(fileReq);
+    return FALSE;
 }

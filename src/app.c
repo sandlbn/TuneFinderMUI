@@ -2,7 +2,6 @@
 
 #include <clib/alib_protos.h>
 #include <clib/exec_protos.h>
-#include <ctype.h>
 #include <exec/memory.h>
 #include <exec/types.h>
 #include <intuition/intuition.h>
@@ -15,17 +14,22 @@
 #include <proto/dos.h>
 #include <dos/dostags.h>
 #include <dos/dosextens.h>  
-
+#include <libraries/asl.h>
+#include <clib/asl_protos.h>
+#include <proto/asl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "../include/app.h"
 #include "../include/main.h"
 #include "../include/locale.h"
+#include "../include/utils.h"
 #include "../include/amigaamp.h"
 #include "../include/country_config.h"
 #include "../include/settings.h"
+#include "../include/favorites.h"
 
 #include "SDI_compiler.h"
 #include "SDI_hook.h"
@@ -128,7 +132,7 @@ void CreateMenu(struct ObjApp *obj) {
     obj->MN_Project_Settings_MUI = MakeMenuItem("Settings MUI...", NULL);           // Keep MUI specific text
     obj->MN_Project_Iconify = MakeMenuItem(GetTFString(MSG_STATE_ICONIFY), "I");    // "Iconify"
     obj->MN_Project_Quit = MakeMenuItem(GetTFString(MSG_ACTION_QUIT), "Q");         // "Quit"
-    
+    obj->MN_Project_Favorites = MakeMenuItem(GetTFString(MSG_STATE_FAVORITES), "F");  // "Favorites"
     obj->MN_Tune_Play = MakeMenuItem(GetTFString(MSG_ACTION_PLAY), "P");     // "Play Tune"
     obj->MN_Tune_Stop = MakeMenuItem(GetTFString(MSG_ACTION_STOP), "T");     // "Stop Tune"
     obj->MN_Tune_Save = MakeMenuItem(GetTFString(MSG_ACTION_SAVE_ONE), NULL); // "Save Tune"
@@ -139,6 +143,7 @@ void CreateMenu(struct ObjApp *obj) {
         MUIA_Menuitem_Title, GetTFString(MSG_STATE_PROJECT),  // "Project"
         MUIA_Family_Child, obj->MN_Project_Find,
         MUIA_Family_Child, obj->MN_Project_Save,
+        MUIA_Family_Child, obj->MN_Project_Favorites,
         MUIA_Family_Child, MakeMenuBar(),
         MUIA_Family_Child, obj->MN_Project_About,
         MUIA_Family_Child, obj->MN_Project_About_MUI,
@@ -195,6 +200,8 @@ void CreateMenuEvents(struct ObjApp *obj) {
   DoMethod(obj->MN_Project_Quit, MUIM_Notify, MUIA_Menuitem_Trigger,
            MUIV_EveryTime, obj->App, 2, MUIM_Application_ReturnID,
            MUIV_Application_ReturnID_Quit);
+  DoMethod(obj->MN_Project_Favorites, MUIM_Notify, MUIA_Menuitem_Trigger,
+         MUIV_EveryTime, obj->App, 2, MUIM_Application_ReturnID, EVENT_FAVORITES);
 
   // Tune menu
   DoMethod(obj->MN_Tune_Play, MUIM_Notify, MUIA_Menuitem_Trigger,
@@ -321,7 +328,6 @@ BOOL APP_Tune_Active(void) {
 BOOL APP_Tune_Save(void)
 {
     LONG index;
-    static char buf[128];
     struct Tune *tune = NULL;
     
     DEBUG("%s", "APP_Tune_Save()\n");
@@ -332,26 +338,19 @@ BOOL APP_Tune_Save(void)
         DoMethod(objApp->LSV_Tune_List, MUIM_List_GetEntry, index, &tune);
         if (tune)
         {
-            // Create save message with tune name
-            GetTFFormattedString(buf, sizeof(buf), MSG_STATUS_FILE_SAVED, tune->name);
-            set(objApp->LAB_Tune_Result, MUIA_Text_Contents, buf);
+            if (SaveSingleStationToPLS(tune)) {
+                return TRUE;
+            }
         }
-        else
-        {
-            // Show error message
-            set(objApp->LAB_Tune_Result, MUIA_Text_Contents, 
-                GetTFString(MSG_ERR_SAVE_FILE));
-        }
+        UpdateStatusMessage(GetTFString(MSG_ERR_SAVE_FILE));
     }
     
-    return TRUE;
+    return FALSE;
 }
-
 
 BOOL APP_Tune_DblClick(void)
 {
     LONG index;
-    static char buf[128];
     struct Tune *tune = NULL;
     
     DEBUG("%s", "APP_Tune_DblClick()\n");
@@ -362,13 +361,28 @@ BOOL APP_Tune_DblClick(void)
         DoMethod(objApp->LSV_Tune_List, MUIM_List_GetEntry, index, &tune);
         if (tune)
         {
-            // Start playing on double click
-            GetTFFormattedString(buf, sizeof(buf), MSG_STATUS_PLAYING, tune->name);
-            set(objApp->LAB_Tune_Result, MUIA_Text_Contents, buf);
+            if (!IsAmigaAMPRunning())
+            {
+                UpdateStatusMessage(GetTFString(MSG_ERR_AMIGAAMP_NOT_RUNNING));
+                return FALSE;
+            }
+            
+            if (OpenStreamInAmigaAMPWithName(tune->url, tune->name))
+            {
+                char buffer[256];
+                GetTFFormattedString(buffer, sizeof(buffer), 
+                    MSG_STATUS_PLAYING, tune->name);
+                UpdateStatusMessage(buffer);
+                return TRUE;
+            }
+            else
+            {
+                UpdateStatusMessage(GetTFString(MSG_ERR_START_PLAYBACK));
+            }
         }
     }
     
-    return TRUE;
+    return FALSE;
 }
 
 
@@ -462,7 +476,6 @@ BOOL APP_Settings_API_Port_Dec(void)
 BOOL APP_Fav_Add(void)
 {
     LONG index;
-    static char buf[128];
     struct Tune *tune = NULL;
     
     DEBUG("%s", "APP_Fav_Add()\n");
@@ -473,24 +486,26 @@ BOOL APP_Fav_Add(void)
         DoMethod(objApp->LSV_Tune_List, MUIM_List_GetEntry, index, &tune);
         if (tune)
         {
-            set(objApp->LAB_Tune_Result, MUIA_Text_Contents, 
-                GetTFString(MSG_STATUS_ADDED_FAV));  // "Added to favorites"
+            if (!IsTuneInFavorites(tune)) {
+                if (SaveFavorite(tune)) {
+                    return TRUE;
+                }
+            } else {
+                UpdateStatusMessage("Station already in favorites");
+            }
         }
         else
         {
-            // Show error
-            set(objApp->LAB_Tune_Result, MUIA_Text_Contents, 
-                GetTFString(MSG_ERR_ADD_FAV));  // "Failed to add to favorites"
+            UpdateStatusMessage(GetTFString(MSG_ERR_ADD_FAV));
         }
     }
     
-    return TRUE;
+    return FALSE;
 }
 
 BOOL APP_Fav_Remove(void)
 {
     LONG index;
-    static char buf[128];
     struct Tune *tune = NULL;
     
     DEBUG("%s", "APP_Fav_Remove()\n");
@@ -501,18 +516,21 @@ BOOL APP_Fav_Remove(void)
         DoMethod(objApp->LSV_Tune_List, MUIM_List_GetEntry, index, &tune);
         if (tune)
         {
-            set(objApp->LAB_Tune_Result, MUIA_Text_Contents, 
-                GetTFString(MSG_STATUS_REMOVED_FAV));  // "Removed from favorites"
+            if (IsTuneInFavorites(tune)) {
+                if (RemoveFavorite(tune)) {
+                    return TRUE;
+                }
+            } else {
+                UpdateStatusMessage("Station not in favorites");
+            }
         }
         else
         {
-            // Show error
-            set(objApp->LAB_Tune_Result, MUIA_Text_Contents, 
-                GetTFString(MSG_ERR_REMOVE_FAV));  // "Failed to remove from favorites"
+            UpdateStatusMessage(GetTFString(MSG_ERR_REMOVE_FAV));
         }
     }
     
-    return TRUE;
+    return FALSE;
 }
 
 BOOL APP_Settings_Cancel(void)
@@ -657,13 +675,43 @@ BOOL APP_Settings_API_Port_Inc(void)
 
 BOOL APP_Save(void)
 {
-    DEBUG("%s", "APP_Save()\n");
+    struct FileRequester *fileReq;
+    char filepath[256];
     
-    // Assuming we're saving all tunes
-    set(objApp->LAB_Tune_Result, MUIA_Text_Contents, 
-        GetTFString(MSG_STATUS_SETTINGS_SAVED));  // "Settings saved."
+    if (!AslBase) {
+        DEBUG("ASL library not available");
+        return FALSE;
+    }
     
-    return TRUE;
+    fileReq = AllocAslRequest(ASL_FileRequest, NULL);
+    if (!fileReq) {
+        DEBUG("Failed to allocate ASL request");
+        return FALSE;
+    }
+
+    if (AslRequestTags(fileReq, 
+        ASLFR_TitleText, "Save All Stations",
+        ASLFR_InitialFile, "radio.pls",
+        ASLFR_DoPatterns, TRUE,
+        ASLFR_InitialPattern, "#?.pls",
+        TAG_DONE)) 
+    {
+        strcpy(filepath, fileReq->rf_Dir);
+        AddPart(filepath, fileReq->rf_File, sizeof(filepath));
+
+        if (!strstr(filepath, ".pls")) {
+            strcat(filepath, ".pls");
+        }
+
+        if (SaveStationsToPLS(filepath)) {
+            UpdateStatusMessage(GetTFString(MSG_STATUS_FILE_SAVED));
+            FreeAslRequest(fileReq);
+            return TRUE;
+        }
+    }
+
+    FreeAslRequest(fileReq);
+    return FALSE;
 }
 
 BOOL APP_Settings(void)
@@ -1061,4 +1109,51 @@ void DisposeApp(struct ObjApp *obj)
         
         FreeVec(obj);
     }
+}
+
+BOOL APP_ShowFavorites(void)
+{
+    LONG count = 0;
+    struct Tune *favorites;
+    
+    DEBUG("APP_ShowFavorites()\n");
+    
+    // Clear existing list
+    DoMethod(objApp->LSV_Tune_List, MUIM_List_Clear);
+    set(objApp->LSV_Tune_List, MUIA_List_Quiet, TRUE);
+    
+    // Load favorites
+    favorites = LoadFavorites(&count);
+    if (favorites)
+    {
+        for(int i = 0; i < count; i++)
+        {
+            // Allocate new tune structure for each entry
+            struct Tune *tune = AllocVec(sizeof(struct Tune), MEMF_CLEAR);
+            if (tune)
+            {
+                tune->name = strdup(favorites[i].name);
+                tune->codec = strdup(favorites[i].codec);
+                tune->bitrate = favorites[i].bitrate;
+                tune->country = strdup(favorites[i].country);
+                tune->url = strdup(favorites[i].url);
+
+                DoMethod(objApp->LSV_Tune_List, MUIM_List_InsertSingle, tune, MUIV_List_Insert_Bottom);
+            }
+        }
+        
+        // Free loaded favorites
+        free(favorites);
+        
+        set(objApp->LSV_Tune_List, MUIA_List_Quiet, FALSE);
+        char buf[256];
+        sprintf(buf, "Loaded %ld favorites", count);
+        set(objApp->LAB_Tune_Result, MUIA_Text_Contents, buf);
+    }
+    else
+    {
+        set(objApp->LAB_Tune_Result, MUIA_Text_Contents, "No favorites found");
+    }
+    
+    return TRUE;
 }

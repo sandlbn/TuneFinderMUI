@@ -80,6 +80,7 @@ enum EVENT_IDS {
   EVENT_TUNE_PLAY,
   EVENT_TUNE_STOP,
   EVENT_TUNE_SAVE,
+  EVENT_FAVORITES,
   EVENT_SETTINGS_BROWSE_AMIGAAMP,
   EVENT_FAV_ADD,
   EVENT_FAV_REMOVE
@@ -110,6 +111,7 @@ struct ObjApp {
   APTR MN_Project_About_MUI;
   APTR MN_Project_Settings;
   APTR MN_Project_Settings_MUI;
+  APTR MN_Project_Favorites;
   APTR MN_Project_Quit;
   APTR MN_Tune_Play;
   APTR MN_Tune_Stop;
