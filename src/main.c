@@ -101,6 +101,7 @@ BOOL APP_About(void)
 
 BOOL APP_About_MUI(void) {
   DEBUG("%s", "APP_About_MUI()\n");
+  
 
   if (!objApp->WIN_About) {
     objApp->WIN_About = AboutmuiObject, MUIA_Window_RefWindow, objApp->WIN_Main,
@@ -113,17 +114,7 @@ BOOL APP_About_MUI(void) {
 
 BOOL APP_Find_Init(void) {
   DEBUG("%s", "APP_Find_Init()\n");
-
-
-  if (!LoadCountryConfig("PROGDIR:countries.cfg", &objApp->countryConfig))
-  {
-        DEBUG("Failed to load country configuration\n");
-        return FALSE;
-  }
-
-    // Initialize cycle gadgets with country list
-    set(objApp->CYC_Find_Country, MUIA_Cycle_Entries, objApp->countryConfig.choices);
-
+  struct APISettings settings;
 
   // Initialize Codecs array
   Codecs[0] = "";
@@ -132,20 +123,37 @@ BOOL APP_Find_Init(void) {
   Codecs[3] = "OGG";
   Codecs[4] = "FLAC";
   Codecs[5] = NULL;
+  if (!LoadCountryConfig("PROGDIR:countries.cfg", &objApp->countryConfig))
+  {
+        DEBUG("Failed to load country configuration\n");
+        return FALSE;
+  }
+
+  // Initialize cycle gadgets with country list
+
+  if (LoadSettings(&settings)) {     
+        DEBUG("After LoadSettings - Country: %ld, Codec: %ld", settings.countryCode, settings.codec);
 
 
-  // Set initial values
-  set(objApp->STR_Find_Name, MUIA_String_Contents, "");
-  set(objApp->STR_Find_Tags, MUIA_String_Contents, "");
-  set(objApp->CYC_Find_Codec, MUIA_Cycle_Entries, Codecs);
-  set(objApp->CYC_Find_Codec, MUIA_Cycle_Active, 2);
-  set(objApp->CYC_Find_Country, MUIA_Cycle_Entries, Countries);
-  set(objApp->CYC_Find_Country, MUIA_Cycle_Active, 13);
-  set(objApp->CHK_Find_HTTPS_Only, MUIA_Selected, FALSE);
-  set(objApp->CHK_Find_Hide_Broken, MUIA_Selected, TRUE);
-  set(objApp->LAB_Tune_Result, MUIA_Text_Contents, 
-  GetTFString(MSG_STATE_READY));  // "Ready"
 
+        // Initialize cycle gadgets with lists
+        set(objApp->CYC_Find_Codec, MUIA_Cycle_Entries, Codecs);
+        set(objApp->CYC_Find_Country, MUIA_Cycle_Entries, objApp->countryConfig.choices);
+
+        // Set saved positions
+
+
+        set(objApp->CYC_Find_Country, MUIA_Cycle_Active, settings.countryCode);
+        set(objApp->CYC_Find_Codec, MUIA_Cycle_Active, settings.codec);
+
+        // Set other controls
+        set(objApp->STR_Find_Name, MUIA_String_Contents, "");
+        set(objApp->STR_Find_Tags, MUIA_String_Contents, "");
+        set(objApp->CHK_Find_HTTPS_Only, MUIA_Selected, FALSE);
+        set(objApp->CHK_Find_Hide_Broken, MUIA_Selected, TRUE);
+        set(objApp->LAB_Tune_Result, MUIA_Text_Contents, GetTFString(MSG_STATE_READY));
+
+ }
   return TRUE;
 }
 
@@ -158,6 +166,7 @@ BOOL APP_Find(void)
     struct SearchParams params;
     struct APISettings settings;
     struct Tune *stations;
+    static char limitStr[32];
     LONG numEntries = 0;
     ULONG startTime, endTime;
     
@@ -175,11 +184,10 @@ BOOL APP_Find(void)
 
     // Load current settings or use defaults
     if (!LoadSettings(&settings)) {
-        // If load fails, use defaults
         memcpy(&settings, &DEFAULT_SETTINGS, sizeof(struct APISettings));
     }
+    DEBUG("Settings after load - limit: %lu", settings.limit);
 
-    // Setup search parameters
     params.name = name;
     params.tag_list = tags;
     params.codec = Codecs[codec];
@@ -193,10 +201,13 @@ BOOL APP_Find(void)
     {
         params.country_code = NULL;  // No country filter
     }
+    
+    sprintf(limitStr, "%lu", settings.limit);  
+
     params.state = NULL;
     params.hidebroken = hideBroken;
     params.is_https = httpsOnly ? HTTPS_TRUE : HTTPS_ALL;
-    params.limit = settings.limit;
+    params.limit = limitStr;
 
     // Clear existing list
     DoMethod(objApp->LSV_Tune_List, MUIM_List_Clear);
@@ -248,6 +259,8 @@ BOOL APP_Find(void)
 
 int main(void) {
   int result = RETURN_FAIL;
+  struct APISettings settings;
+  LONG country, codec;
 
     if (!InitLocaleSystem()) {
         DEBUG("%s", "Warning: Failed to initialize locale system\n");
@@ -404,8 +417,22 @@ int main(void) {
     } else {
       DEBUG("%s", "Failed to create application!\n");
     }
+    if (objApp && objApp->WIN_Main) {
+        get(objApp->CYC_Find_Country, MUIA_Cycle_Active, &country);
+        get(objApp->CYC_Find_Codec, MUIA_Cycle_Active, &codec);
+    }
+  if (LoadSettings(&settings)) {     
+     settings.countryCode = country;
+     settings.codec = codec;
 
- 
+    DEBUG("Country: %ld", country);
+
+        if (SaveSettings(&settings)) {
+            DEBUG("Settings saved successfully");
+        } else {
+            DEBUG("Failed to save settings");
+        }
+    }
  APP_ShutdownAmigaAMP();
  CleanupLibs();
  CleanupLocaleSystem();

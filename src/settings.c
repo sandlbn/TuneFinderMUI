@@ -93,16 +93,19 @@ BOOL SaveSettings(const struct APISettings *settings) {
     sprintf(filepath, TUNEFINDER_DIR ENV_COUNTRY);
     file = Open(filepath, MODE_NEWFILE);
     if (file) {
-        FPrintf(file, "%ld", settings->countryCode);
+        // Write number as explicit decimal with newline
+        FPrintf(file, "%ld\n", (LONG)settings->countryCode);
         Close(file);
+        DEBUG("Saved country code: %ld", (LONG)settings->countryCode);
     }
 
     // Save codec
     sprintf(filepath, TUNEFINDER_DIR ENV_CODEC);
     file = Open(filepath, MODE_NEWFILE);
     if (file) {
-        FPrintf(file, "%ld", settings->codec);
+        FPrintf(file, "%ld\n", (LONG)settings->codec);
         Close(file);
+        DEBUG("Saved codec: %ld", (LONG)settings->codec);
     }
 
     return TRUE;
@@ -188,6 +191,59 @@ BOOL LoadSettings(struct APISettings *settings) {
             settings->iconifyAmigaAMP = (value == '1');
         }
         Close(file);
+    }
+
+    // Load country code
+    sprintf(filepath, TUNEFINDER_DIR ENV_COUNTRY);
+    file = Open(filepath, MODE_OLDFILE);
+    if (file) {
+        char buffer[32];
+        LONG len = Read(file, buffer, sizeof(buffer) - 1);
+        if (len > 0) {
+            buffer[len] = '\0';
+            // Remove any trailing whitespace or newlines
+            while (len > 0 && (buffer[len-1] == '\n' || buffer[len-1] == '\r' || buffer[len-1] == ' ')) {
+                buffer[--len] = '\0';
+            }
+            DEBUG("Read country string: '%s'", buffer);
+            
+            // Simple atoi-style conversion
+            LONG val = 0;
+            char *p = buffer;
+            while (*p >= '0' && *p <= '9') {
+                val = val * 10 + (*p - '0');
+                p++;
+            }
+            settings->countryCode = val;
+            DEBUG("Converted country code: %ld", settings->countryCode);
+        }
+        Close(file);
+    }
+    // Loading codec
+    sprintf(filepath, TUNEFINDER_DIR ENV_CODEC);
+    file = Open(filepath, MODE_OLDFILE);
+    if (file) {
+    char buffer[32];
+    LONG len = Read(file, buffer, sizeof(buffer) - 1);
+    if (len > 0) {
+        buffer[len] = '\0';
+        // Remove any trailing whitespace or newlines
+        while (len > 0 && (buffer[len-1] == '\n' || buffer[len-1] == '\r' || buffer[len-1] == ' ')) {
+            buffer[--len] = '\0';
+        }
+        DEBUG("Read codec string: '%s'", buffer);
+        
+        // Simple atoi-style conversion
+        LONG val = 0;
+        char *p = buffer;
+        while (*p >= '0' && *p <= '9') {
+            val = val * 10 + (*p - '0');
+            p++;
+        }
+        settings->codec = val;
+        DEBUG("Converted codec value: %ld", settings->codec);
+    }
+    Close(file);
     }
 
     return TRUE;
