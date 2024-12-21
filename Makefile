@@ -38,7 +38,7 @@ OBJECTS = $(patsubst $(SRCDIR)/%.c,$(BUILDDIR)/%.o,$(SOURCES))
 BASE_CCFLAGS = -MP -MMD -Wextra -Wno-unused-function \
     -Wno-discarded-qualifiers -Wno-int-conversion \
     -Wno-volatile-register-var -fno-lto -noixemul \
-    -fbaserel $(CPU_FLAGS) \
+    -fbaserel -lamiga -lm -D__AMIGAOS3__ $(CPU_FLAGS) \
     -I$(INCDIR) -I$(SDKDIR) -I$(NDKDIR) -Iinclude
 
 # Additional libraries

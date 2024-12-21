@@ -239,6 +239,7 @@ char *make_http_request(const struct APISettings *settings, const char *path) {
   const int MAX_RETRIES = 3;
   char msg[MAX_STATUS_MSG_LEN];
   int chunk_count;
+  int dns_ok = FALSE;
 
   buffer_size = PREFERRED_BUFFER_SIZE;
   DEBUG("Initial buffer size: %ld bytes", buffer_size);
@@ -265,20 +266,37 @@ char *make_http_request(const struct APISettings *settings, const char *path) {
   
   snprintf(msg, MAX_STATUS_MSG_LEN, "Resolving host: %s", settings->host);
   DEBUG("Resolving host: %s", settings->host);
-  server = gethostbyname(settings->host);
-  if (!server) {
-    UpdateStatusMessage(GetTFString(MSG_FAILED_RESOLV_HOST));
-    goto cleanup;
-  }
 
-  memset(&server_addr, 0, sizeof(server_addr));
-  server_addr.sin_family = AF_INET;
-  memcpy(&server_addr.sin_addr.s_addr, server->h_addr, server->h_length);
-  server_addr.sin_port = htons(API_PORT_DEFAULT);
+  Forbid();
 
-  struct timeval timeout;
-  timeout.tv_sec = 30;
-  timeout.tv_usec = 0;
+if (settings && settings->host) {
+    server = gethostbyname(settings->host);
+    if (server && server->h_addr) {
+        dns_ok = TRUE;
+    }
+}
+Permit(); 
+if (!dns_ok) {
+    DEBUG("DNS lookup failed for %s", settings->host);
+    UpdateStatusMessage("Failed to resolve hostname");
+    return NULL;
+}
+
+memset(&server_addr, 0, sizeof(server_addr));
+server_addr.sin_family = AF_INET;
+memcpy(&server_addr.sin_addr.s_addr, server->h_addr, server->h_length);
+server_addr.sin_port = htons(API_PORT_DEFAULT);
+
+struct timeval timeout;
+timeout.tv_sec = 30;
+timeout.tv_usec = 0;
+
+if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) {
+    DEBUG("Failed to set receive timeout");
+}
+if (setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout)) < 0) {
+    DEBUG("Failed to set send timeout");
+}
 
   DEBUG("Connecting to server");
   if (connect(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr)) <

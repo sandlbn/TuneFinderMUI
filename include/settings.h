@@ -4,10 +4,10 @@
 #include <exec/types.h>
 #include "data.h" 
 extern const struct APISettings DEFAULT_SETTINGS;
-#define TUNEFINDER_DIR "ENVARC:TuneFinder/"
-#define CONFIG_PATH "ENVARC:TuneFinder/"
-#define FULL_COUNTRY_CONFIG_PATH "ENVARC:TuneFinder/countries.cfg"
-#define FAVORITES_CONFIG "ENVARC:TuneFinder/favorites.cfg"
+#define TUNEFINDER_DIR "ENVARC:TuneFinderMUI/"
+#define CONFIG_PATH "ENVARC:TuneFinderMUI/"
+#define FULL_COUNTRY_CONFIG_PATH "ENVARC:TuneFinderMUI/countries.cfg"
+#define FAVORITES_CONFIG "ENVARC:TuneFinderMUI/favorites.cfg"
 
 #define ENV_HOST "apihost"
 #define ENV_PORT "apiport"

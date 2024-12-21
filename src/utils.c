@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../include/main.h"
+#include "../include/settings.h"
 
 struct ObjApp *objApp;  // Global variable definition
 
@@ -102,7 +103,7 @@ BOOL EnsureSettingsPath(void) {
   UnLock(lock);
 
   // Check if settings directory exists
-  lock = Lock(ENV_PATH, ACCESS_READ);
+  lock = Lock(TUNEFINDER_DIR, ACCESS_READ);
   if (lock) {
     UnLock(lock);
     return TRUE;
