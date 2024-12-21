@@ -41,7 +41,6 @@ extern void geta4(void);
 struct ObjApp *objApp;  // Global variable definition
 
 HOOKPROTONH(DisplayCode, VOID, char **array, struct Tune *tune) {
-
   if (tune != NULL) {
     *array++ = tune->name;
     *array++ = tune->codec;
@@ -486,6 +485,8 @@ BOOL APP_Fav_Add(void)
         DoMethod(objApp->LSV_Tune_List, MUIM_List_GetEntry, index, &tune);
         if (tune)
         {
+
+            DEBUG("Adding favorite - Name: %s, Bitrate: %d", tune->name, tune->bitrate);
             if (!IsTuneInFavorites(tune)) {
                 if (SaveFavorite(tune)) {
                     return TRUE;

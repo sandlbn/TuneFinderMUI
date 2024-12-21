@@ -35,7 +35,7 @@ BOOL SaveFavorite(const struct Tune *tune) {
     
     // Write station data: name|url|codec|country|bitrate
     char buffer[1024];
-    sprintf(buffer, "%s|%s|%s|%s|%d\n", 
+    sprintf(buffer, "%s|%s|%s|%s|%s\n", 
             tune->name ? tune->name : "",
             tune->url ? tune->url : "",
             tune->codec ? tune->codec : "",
@@ -198,7 +198,7 @@ struct Tune *LoadFavorites(LONG *count) {
         if (token) favorites[curEntry].country = strdup(token);
 
         token = strtok_r(NULL, "|", &saveptr);
-        if (token) favorites[curEntry].bitrate = atoi(token);
+        if (token) favorites[curEntry].bitrate = strdup(token);
 
         // Only increment if we got all fields
         if (favorites[curEntry].name && favorites[curEntry].url) {
