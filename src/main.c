@@ -19,6 +19,7 @@
 #include "../include/network.h"
 #include "../include/settings.h"
 #include "../include/country_config.h"
+#include "../include/unicode.h"
 
 // Global variables
 static CONST_STRPTR Codecs[32];
@@ -228,7 +229,9 @@ BOOL APP_Find(void)
             if (tune)
             {
                 // Convert station to tune structure
-                tune->name = strdup(stations[i].name);
+
+                char *converted_name = convertToASCII((const unsigned char *)stations[i].name);
+                tune->name = converted_name ? converted_name : strdup(stations[i].name);
                 tune->codec = strdup(stations[i].codec);
                 // Convert bitrate to string
                 char bitrate[32];

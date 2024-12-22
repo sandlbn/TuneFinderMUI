@@ -133,7 +133,12 @@ void CreateMenu(struct ObjApp *obj) {
     obj->MN_Project_Settings_MUI = MakeMenuItem("Settings MUI...", NULL);           // Keep MUI specific text
     obj->MN_Project_Iconify = MakeMenuItem(GetTFString(MSG_STATE_ICONIFY), "I");    // "Iconify"
     obj->MN_Project_Quit = MakeMenuItem(GetTFString(MSG_ACTION_QUIT), "Q");         // "Quit"
-    obj->MN_Project_Favorites = MakeMenuItem(GetTFString(MSG_STATE_FAVORITES), "F");  // "Favorites"
+    obj->MN_Project_Favorites = MenuitemObject,
+    MUIA_Menuitem_Title, GetTFString(MSG_STATE_FAVORITES),
+    MUIA_Menuitem_Checkit, TRUE,
+    MUIA_Menuitem_Toggle, TRUE,
+    MUIA_Menuitem_Shortcut, "F",
+    End;
     obj->MN_Tune_Play = MakeMenuItem(GetTFString(MSG_ACTION_PLAY), "P");     // "Play Tune"
     obj->MN_Tune_Stop = MakeMenuItem(GetTFString(MSG_ACTION_STOP), "T");     // "Stop Tune"
     obj->MN_Tune_Save = MakeMenuItem(GetTFString(MSG_ACTION_SAVE_ONE), NULL); // "Save Tune"
