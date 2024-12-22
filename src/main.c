@@ -229,6 +229,7 @@ BOOL APP_Find(void)
             if (tune)
             {
                 // Convert station to tune structure
+
                 char *converted_name = convertToASCII((const unsigned char *)stations[i].name);
                 tune->name = converted_name ? converted_name : strdup(stations[i].name);
                 tune->codec = strdup(stations[i].codec);

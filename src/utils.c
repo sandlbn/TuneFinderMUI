@@ -250,5 +250,5 @@ BOOL SaveSingleStationToPLS(const struct Tune *station)
 
     FreeAslRequest(fileReq);
     return FALSE;
-}
 
+}

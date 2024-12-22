@@ -528,7 +528,9 @@ BOOL APP_Fav_Remove(void)
                 if (RemoveFavorite(tune)) {
                     BOOL isFavorites = FALSE;
                     get(objApp->MN_Project_Favorites, MUIA_Menuitem_Checked, &isFavorites);
-                    APP_ShowFavorites();
+                    if (isFavorites) {
+                        APP_ShowFavorites();
+                    }
                     return TRUE;
                 }
             } else {
