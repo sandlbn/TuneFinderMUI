@@ -13,7 +13,7 @@ OUTDIR = out
 AMINET_NAME = TuneFinderMUI
 ASSETS_DIR = assets
 AMINET_DIR = $(ASSETS_DIR)/aminet
-ICON_DIR = $(ASSETS_DIR)/icon
+ICON_DIR = $(ASSETS_DIR)/icons
 RELEASE_DIR = release
 
 # Program settings
@@ -74,6 +74,22 @@ release:
 	@echo "Building release version..."
 	$(MAKE) dirs
 	$(MAKE) $(OUTDIR)/$(PROGRAM_NAME)
+	
+aminet-release: $(OUTDIR)/$(PROGRAM_NAME)
+	$(info Creating Aminet release...)
+	mkdir -p $(RELEASE_DIR)/$(AMINET_NAME)
+	# Copy main program and info
+	cp $(OUTDIR)/$(PROGRAM_NAME) $(RELEASE_DIR)/$(AMINET_NAME)/
+	mkdir -p $(RELEASE_DIR)/$(AMINET_NAME)/Icons
+	cp $(ICON_DIR)/$(PROGRAM_NAME).info $(RELEASE_DIR)/$(AMINET_NAME)/
+	cp $(ICON_DIR)/$(PROGRAM_NAME)Drawer.info $(RELEASE_DIR)/$(AMINET_NAME).info
+	cp $(ICON_DIR)/$(PROGRAM_NAME)Drawer.info $(RELEASE_DIR)/$(AMINET_NAME)/Icons/TuneFinderMUI.info
+	# Copy installer
+	cp $(ICON_DIR)/Install.info $(RELEASE_DIR)/$(AMINET_NAME)/Install_TuneFinder.info
+	cp assets/install/Install_TuneFinder $(RELEASE_DIR)/$(AMINET_NAME)/Install_TuneFinder
+	# Create archive
+	cd $(RELEASE_DIR) && lha -ao5 ../$(AMINET_NAME).lha .
+	$(info Aminet release created: $(AMINET_NAME).lha)
 
 dirs:
 	@mkdir -p $(BUILD_DIRS)
@@ -93,5 +109,10 @@ clean:
 	@$(RM) -rf $(BUILDDIR)
 	@$(RM) -f $(OUTDIR)/$(PROGRAM_NAME)
 	@$(RM) -f $(OUTDIR)/$(PROGRAM_NAME).map
+
+aminet-clean:
+	$(info Cleaning Aminet release files...)
+	$(RM) -rf $(RELEASE_DIR)
+	$(RM) -f $(AMINET_NAME).lha
 
 -include $(OBJECTS:.o=.d)

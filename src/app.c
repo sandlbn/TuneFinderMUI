@@ -21,6 +21,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include "SDI_compiler.h"
+#include "SDI_hook.h"
+#include "SDI_lib.h"
+#include "SDI_stdarg.h"
 
 #include "../include/app.h"
 #include "../include/main.h"
@@ -31,13 +35,11 @@
 #include "../include/settings.h"
 #include "../include/favorites.h"
 
-#include "SDI_compiler.h"
-#include "SDI_hook.h"
-#include "SDI_lib.h"
-#include "SDI_stdarg.h"
+
 #ifdef __GNUC__
 extern void geta4(void);
 #endif
+
 struct ObjApp *objApp;  // Global variable definition
 
 HOOKPROTONH(DisplayCode, VOID, char **array, struct Tune *tune) {
@@ -519,6 +521,11 @@ BOOL APP_Fav_Remove(void)
         {
             if (IsTuneInFavorites(tune)) {
                 if (RemoveFavorite(tune)) {
+                    BOOL isFavorites = FALSE;
+                    get(objApp->MN_Project_Favorites, MUIA_Menuitem_Checked, &isFavorites);
+                    if (isFavorites) {
+                        APP_ShowFavorites();
+                    }
                     return TRUE;
                 }
             } else {
@@ -1118,6 +1125,8 @@ BOOL APP_ShowFavorites(void)
     struct Tune *favorites;
     
     DEBUG("APP_ShowFavorites()\n");
+
+    set(objApp->MN_Project_Favorites, MUIA_Menuitem_Checked, TRUE);
     
     // Clear existing list
     DoMethod(objApp->LSV_Tune_List, MUIM_List_Clear);

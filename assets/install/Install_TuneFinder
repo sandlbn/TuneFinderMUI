@@ -1,0 +1,61 @@
+; TuneFinder Installer Script
+
+(set @app-name "TuneFinder MUI")
+
+(welcome 
+    "Welcome to the TuneFinder installation program.\n\n"
+    "This will install TuneFinder MUI version 0.1-beta on your system."
+)
+
+(set default-dest
+    (askdir
+        (prompt "Choose destination directory for TuneFinder")
+        (help "Please select the drawer where you want to install TuneFinder MUI")
+        (default "SYS:")
+    )
+)
+
+(set prog-dest
+    (tackon default-dest @app-name)
+)
+
+(if (exists prog-dest)
+    (
+        (set overwrite-check
+            (askbool
+                (prompt "Directory already exists. Overwrite existing files?")
+                (help "Select Yes to overwrite existing files, or No to abort installation")
+                (default 0)
+            )
+        )
+        (if (not overwrite-check)
+            (exit (quiet))
+        )
+    )
+)
+
+; Create main program directory
+(makedir prog-dest
+    (infos)
+)
+
+; Copy main program files
+(copyfiles
+    (source "TuneFinderMUI")
+    (dest prog-dest)
+    (prompt "Copying TuneFinder program")
+)
+
+; Copy catalogs based on user selection
+
+; Copy drawer icon
+(copyfiles
+    (source "Icons/TuneFinderMUI.info")
+    (dest default-dest)
+    (prompt "Copying drawer icon")
+)
+
+(complete "TuneFinder has been successfully installed.\n\n"
+          "You can find it in:\n"
+          prog-dest
+)

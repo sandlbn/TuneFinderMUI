@@ -31,10 +31,10 @@
 
 // Application defines
 #define APP_NAME "TuneFinder MUI"
-#define APP_DATE "25.11.2024"
-#define APP_VERSION "0.1.1"
+#define APP_DATE "21.12.2024"
+#define APP_VERSION "0.1-beta"
 #define APP_VERSTRING "$VER: " APP_NAME " " APP_VERSION " (" APP_DATE ")"
-#define APP_AUTHORS "Marcin Spoczynski"
+#define APP_AUTHORS "Marcin Spoczynski & flype"
 #define APP_COPYRIGHT "Free to use and distribute"
 #define APP_DESCRIPTION "An Internet Radio browser for AmigaOS 3.x"
 #define APP_HELPFILE APP_NAME ".guide"
