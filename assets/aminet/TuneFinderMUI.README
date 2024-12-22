@@ -1,0 +1,34 @@
+Short:        Search and play online radio stations with MUI interface
+Author:       marcin@spoczynski.com (Marcin Spoczynski)
+Uploader:     marcin@spoczynski.com (Marcin Spoczynski)
+Type:         comm/misc
+Version:      0.1-beta
+Architecture: m68k-amigaos >= 3.0
+Requires:     MUI 3.8+
+Distribution: Aminet
+Replaces:     comm/misc/TuneFinderMUI.lha
+
+Description:
+TuneFinderMUI is a MUI version of TuneFinder that enables users to search and 
+play online radio stations. It provides various filter options including 
+country, codec, tags and stream filters. Results are displayed in a list with 
+detailed station information, and the app includes options to save selections 
+as either a complete playlist or individual station files.
+
+Main features:
+- MUI-based interface with filterable search
+- PLS playlist compatible with AmigaAMP for seamless playback 
+- Direct station playback from interface
+- AmigaAMP auto-start and iconify options
+- Favorites management
+- Save results as PLS playlists
+- European UTF-8 language character support
+- Native AmigaOS application
+
+Requirements:
+- AmigaOS 3.0+
+- MUI 3.8+
+- AmigaAMP for playback
+- bsdsocket.library
+- TCP/IP stack
+
