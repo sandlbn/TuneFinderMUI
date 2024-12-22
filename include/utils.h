@@ -4,6 +4,7 @@
 #include <exec/types.h>
 #include <exec/lists.h>
 #include "data.h"
+#include "main.h"
 
 void free_labels(struct List* l);
 BOOL SaveStationsToPLS(const char *filename);

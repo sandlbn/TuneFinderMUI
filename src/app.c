@@ -841,7 +841,7 @@ VOID CreateWindowMain(struct ObjApp *obj) {
 
   // Window
 
-  obj->WIN_Main = WindowObject, MUIA_Window_Title, APP_NAME, MUIA_Window_ID,
+  obj->WIN_Main = WindowObject, MUIA_Window_Title, APP_NAME " - " APP_VERSION, MUIA_Window_ID,
   APP_ID_WIN_MAIN, MUIA_Window_AppWindow, FALSE, MUIA_Window_SizeGadget, TRUE,
   WindowContents, group0, End;
 
