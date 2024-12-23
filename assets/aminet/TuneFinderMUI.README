@@ -32,3 +32,7 @@ Requirements:
 - bsdsocket.library
 - TCP/IP stack
 
+Credits:
+- Interface design by Philippe Carpentier @flype44 
+- Icons design by Thomas Blatt
+- Developed by Marcin Spoczynski @sandlbn

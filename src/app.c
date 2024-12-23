@@ -238,8 +238,7 @@ BOOL APP_Tune_Details_Init(void) {
   DEBUG("%s", "APP_Tune_Details_Init()\n");
 
   set(objApp->TXT_Tune_Name, MUIA_Text_Contents, "\033bWelcome to " APP_NAME);
-  set(objApp->TXT_Tune_URL, MUIA_Text_Contents, "By " APP_AUTHORS);
-  set(objApp->TXT_Tune_Details, MUIA_Text_Contents, APP_DESCRIPTION);
+  set(objApp->TXT_Tune_URL, MUIA_Text_Contents, APP_DESCRIPTION);
 
   set(objApp->BTN_Tune_Play, MUIA_Disabled, TRUE);
   set(objApp->BTN_Tune_Stop, MUIA_Disabled, TRUE);
