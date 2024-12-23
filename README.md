@@ -57,7 +57,7 @@ TuneFinderMUI provides:
 
 ## Credits
 
-- Interface design by @flype
+- Interface design by Philippe Carpentier [@flype44](https://github.com/flype44)
 - Icons design by Thomas Blatt
 - Developed by [@sandlbn](https://github.com/sandlbn)
 

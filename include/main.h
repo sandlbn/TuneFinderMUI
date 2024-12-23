@@ -34,7 +34,7 @@
 #define APP_DATE "21.12.2024"
 #define APP_VERSION "0.1-beta"
 #define APP_VERSTRING "$VER: " APP_NAME " " APP_VERSION " (" APP_DATE ")"
-#define APP_AUTHORS "Marcin Spoczynski & flype & Thomas Blatt"
+#define APP_AUTHORS "Coding: Marcin Spoczynski\nGUI Design: Philippe Carpentier\nIcons: Thomas Blatt\n"
 #define APP_COPYRIGHT "Free to use and distribute"
 #define APP_DESCRIPTION "An Internet Radio browser for AmigaOS 3.x"
 #define APP_HELPFILE APP_NAME ".guide"
