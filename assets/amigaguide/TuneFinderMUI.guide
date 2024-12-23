@@ -1,0 +1,154 @@
+@database TuneFinderMUI.guide
+@node Main "TuneFinderMUI User Guide"
+@{fg shine}TuneFinderMUI User Guide@{fg text}
+
+TuneFinderMUI is a MUI-based AmigaOS 3.x application 
+for browsing and saving Internet radio stations.
+
+@{b}Contents:@{ub}
+@{"Basic Usage" link BASIC}
+@{"Search Options" link SEARCH}
+@{"Settings" link SETTINGS}
+@{"Saving Stations" link SAVING}
+@{"Favorites" link FAVORITES}
+@{"Translation" link TRANS}
+@{"Countries" link COUNTRIES}
+
+@endnode
+
+@node BASIC "Basic Usage"
+@{fg shine}Basic Usage@{fg text}
+
+TuneFinderMUI allows you to search and play Internet radio stations.
+
+To use TuneFinderMUI:
+1. Enter search criteria in the fields
+2. Click "Find Tunes" to search stations
+3. Select a station from the list
+4. Use Play/Stop buttons to control playback in AmigaAMP
+
+@{fg shine}Keyboard Shortcuts:@{fg text}
+- F - Show Favorites
+- P - Play selected station
+- T - Stop playback
+- I - Iconify window
+- Q - Quit application
+
+@{fg shine}Status Information@{fg text}
+The status bar at the bottom shows:
+- Search results count
+- Current operation status
+- Playing station info
+
+@{"Back to Main" link Main}
+@endnode
+
+@node SEARCH "Search Options"
+@{fg shine}Search Options@{fg text}
+
+The main window provides several search fields:
+
+@{b}Name@{ub} - Enter station name or part of it
+
+@{b}Tags@{ub} - Enter tags separated by commas (e.g., "rock,metal,alternative")
+
+@{b}Country@{ub} - Select country from dropdown
+
+@{b}Codec@{ub} - Choose audio codec (MP3, AAC, OGG, FLAC)
+
+@{b}Additional Filters@{ub}:
+- HTTPS Only: Show only secure stations
+- Hide Broken: Hide broken stations
+
+@{"Back to Main" link Main}
+@endnode
+
+@node SETTINGS "Settings"
+@{fg shine}Settings@{fg text}
+
+Access through Project -> Settings menu.
+
+Settings window contains:
+- API Host: Radio Browser API server
+- API Port: Server port (default 80)
+- Search Limit: Maximum results (default 100)
+- AmigaAMP Path: Path to AmigaAMP executable
+ Use 'Browse' to select location
+- Iconify AmigaAMP: Auto-minimize AmigaAMP on start
+
+AmigaAMP Integration:
+- Autostart: Launches AmigaAMP if needed
+- Iconify: Minimizes AmigaAMP window when started
+- Settings are saved automatically
+
+@{"Back to Main" link Main}
+@endnode
+
+@node SAVING "Saving Stations"
+@{fg shine}Saving Stations@{fg text}
+
+Two ways to save stations:
+
+@{b}Save Station@{ub} 
+- Select station
+- Click "Save" or use tune menu
+- Choose location
+- Creates single station PLS file
+
+@{b}Save All@{ub}
+- Search for stations
+- Use "Save All" from Project menu
+- Creates PLS with all found stations
+
+@{"Back to Main" link Main}
+@endnode
+
+@node FAVORITES "Favorites Management"
+@{fg shine}Favorites Management@{fg text}
+
+TuneFinderMUI provides favorites management:
+
+- Add: Select station and click 'Fav+'
+- Remove: Select station and click 'Fav-'
+- View: Access through Project -> Favorites (F)
+- Storage: Favorites saved in ENVARC:TuneFinderMUI/favorites.cfg
+
+@{"Back to Main" link Main}
+@endnode
+
+@node TRANS "Translation"
+@{fg shine}Translation Support@{fg text}
+
+TuneFinderMUI supports multiple languages through Amiga's catalog system.
+
+Create translation:
+1. Copy assets/translation template to .ct file
+2. Replace English text with translations
+3. Keep MSG_ identifiers and semicolons
+4. Update language code in header
+5. Generate catalog with flexcat:
+
+`flexcat tunefinder.cd yourlanguage.ct CATALOG LOCALE:Catalogs/yourlanguage/tunefinder.catalog`
+
+@{"Back to Main" link Main}
+@endnode
+
+@node COUNTRIES "Countries"
+@{fg shine}Countries@{fg text}
+
+Manage country list:
+
+1. Edit ENVARC:TuneFinderMUI/countries.cfg
+2. Format: CODE:Name
+  Example:
+  PL:Poland
+  US:United States
+  GB:United Kingdom
+
+- Use ISO 3166-1 alpha-2 country codes
+- One entry per line
+- Default list created on first run
+- Restart required after changes
+
+@{"Back to Main" link Main}
+@endnode

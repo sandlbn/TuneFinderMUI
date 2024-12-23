@@ -38,7 +38,9 @@
 (makedir prog-dest
     (infos)
 )
-
+(makedir (tackon prog-dest "Docs")
+    (infos)
+)
 ; Copy main program files
 (copyfiles
     (source "TuneFinderMUI")
@@ -51,7 +53,17 @@
     (prompt "Copying TuneFinder icon")
 )
 
-; Copy catalogs based on user selection
+; Copy english documentation
+(copyfiles
+    (source "Docs/TuneFinderMUI.guide")
+    (dest (tackon prog-dest "Docs"))
+    (prompt "Copying documentation")
+)
+
+(copyfiles
+    (source "Docs/TuneFinderMUI.guide.info")
+    (dest (tackon prog-dest "Docs"))
+)
 
 ; Copy drawer icon
 (copyfiles
@@ -60,7 +72,7 @@
     (prompt "Copying drawer icon")
 )
 
-(complete "TuneFinder has been successfully installed.\n\n"
+(complete "TuneFinderMUI has been successfully installed.\n\n"
           "You can find it in:\n"
           prog-dest
 )
