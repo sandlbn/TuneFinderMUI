@@ -60,7 +60,7 @@ static const char *built_in_strings[] = {
     "Browse",       // 35
     "Select Program", // 36
     "Iconify AmigaAmp", // 37
-    NULL,           // 38
+    "Quit AmigaAmp on Exit",           // 38
     NULL,           // 39
 
     // Status Messages (40-49)

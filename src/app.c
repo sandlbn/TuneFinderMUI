@@ -260,6 +260,7 @@ BOOL APP_Settings_Init(void)
         set(objApp->CHK_Settings_Iconify, MUIA_Selected, settings.iconifyAmigaAMP);
         set(objApp->CYC_Find_Country, MUIA_Cycle_Active, settings.countryCode);
         set(objApp->CYC_Find_Codec, MUIA_Cycle_Active, settings.codec);
+        set(objApp->CHK_Settings_QuitAmigaAMP, MUIA_Selected, settings.quitAmigaAMP);
 
         if (!APP_StartupAmigaAMP(&settings)) {
             DEBUG("Warning: Failed to start AmigaAMP");
@@ -597,6 +598,10 @@ BOOL APP_Settings_Save(void)
     // Get iconify setting
     get(objApp->CHK_Settings_Iconify, MUIA_Selected, &tempLong);
     settings.iconifyAmigaAMP = (BOOL)tempLong;
+
+    // Get AmigaAmp Quit
+    get(objApp->CHK_Settings_QuitAmigaAMP, MUIA_Selected, &tempLong);
+    settings.quitAmigaAMP = (BOOL)tempLong;
     
     // Get country code
     get(objApp->CYC_Find_Country, MUIA_Cycle_Active, &tempLong);
@@ -923,13 +928,24 @@ void CreateWindowSettings(struct ObjApp *obj) {
   End;
 
   obj->CHK_Settings_Iconify = CheckMark(FALSE);
-
   APTR iconifyGroup = HGroup,
       MUIA_Group_SameWidth, FALSE,
       Child, obj->CHK_Settings_Iconify,
       Child, HSpace(0),
       MUIA_Weight, 200,    
   End;
+
+  // Quit AmigaAmp
+
+  obj->CHK_Settings_QuitAmigaAMP = CheckMark(TRUE);
+
+  APTR quitGroup = HGroup,
+    MUIA_Group_SameWidth, FALSE,
+    Child, obj->CHK_Settings_QuitAmigaAMP,
+    Child, HSpace(0),
+    MUIA_Weight, 200,
+  End;
+
   // Host (URI string)
   obj->STR_Settings_API_Host = StringObject, MUIA_Frame, MUIV_Frame_String,
   MUIA_String_AdvanceOnCR, TRUE, MUIA_String_Accept, API_HOST_ACCEPT,
@@ -991,7 +1007,10 @@ void CreateWindowSettings(struct ObjApp *obj) {
         Child, Label(GetTFString(MSG_OPTION_SELECT_PROGRAM)),
         Child, pathGroup,
         Child, Label(GetTFString(MSG_OPTION_ICONIFY_AMIGAAMP)),
-       Child, iconifyGroup,
+        Child, iconifyGroup,
+        Child, Label(GetTFString(MSG_OPTION_QUIT_AMIGAAMP)),  // "Quit AmigaAMP on exit"
+        Child, quitGroup, 
+
     End;
     
     group2 = HGroup,

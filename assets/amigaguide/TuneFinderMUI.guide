@@ -75,10 +75,11 @@ Settings window contains:
 - AmigaAMP Path: Path to AmigaAMP executable
  Use 'Browse' to select location
 - Iconify AmigaAMP: Auto-minimize AmigaAMP on start
-
+- Quit AmigaAMP on exit: Auto-kill AmigaAMP on TuneFinder exit
 AmigaAMP Integration:
 - Autostart: Launches AmigaAMP if needed
 - Iconify: Minimizes AmigaAMP window when started
+- Exit: Quit AmigaAMP on TuneFinder exit
 - Settings are saved automatically
 
 @{"Back to Main" link Main}
