@@ -12,6 +12,7 @@ struct APISettings {
     BOOL iconifyAmigaAMP;
     LONG countryCode;
     LONG codec;
+    BOOL quitAmigaAMP;
 };
 
 struct SearchParams {

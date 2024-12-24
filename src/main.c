@@ -136,14 +136,11 @@ BOOL APP_Find_Init(void) {
   if (LoadSettings(&settings)) {     
         DEBUG("After LoadSettings - Country: %ld, Codec: %ld", settings.countryCode, settings.codec);
 
-
-
         // Initialize cycle gadgets with lists
         set(objApp->CYC_Find_Codec, MUIA_Cycle_Entries, Codecs);
         set(objApp->CYC_Find_Country, MUIA_Cycle_Entries, objApp->countryConfig.choices);
 
         // Set saved positions
-
 
         set(objApp->CYC_Find_Country, MUIA_Cycle_Active, settings.countryCode);
         set(objApp->CYC_Find_Codec, MUIA_Cycle_Active, settings.codec);
@@ -439,8 +436,10 @@ int main(void) {
         } else {
             DEBUG("Failed to save settings");
         }
-    }
- APP_ShutdownAmigaAMP();
+        if (settings.quitAmigaAMP) {
+            APP_ShutdownAmigaAMP();
+        }
+  }
  CleanupLibs();
  CleanupLocaleSystem();
  CleanupNetworkSystem();

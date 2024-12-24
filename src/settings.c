@@ -24,7 +24,8 @@ const struct APISettings DEFAULT_SETTINGS = {
     "",               // autostart (empty string)
     FALSE,            // iconifyAmigaAMP
     0,                // countryCode
-    0                // codec
+    0,                // codec
+    TRUE            // exit AmigaAmp true as it is default option
 
 };
 
@@ -86,6 +87,14 @@ BOOL SaveSettings(const struct APISettings *settings) {
     file = Open(filepath, MODE_NEWFILE);
     if (file) {
         FPutC(file, settings->iconifyAmigaAMP ? '1' : '0');
+        Close(file);
+    }
+
+    // Save ENV quit Amigaamp 
+    sprintf(filepath, TUNEFINDER_DIR ENV_QUIT_AMIGAAMP);
+    file = Open(filepath, MODE_NEWFILE);
+    if (file) {
+        FPutC(file, settings->quitAmigaAMP ? '1' : '0');
         Close(file);
     }
     
@@ -191,6 +200,20 @@ BOOL LoadSettings(struct APISettings *settings) {
             settings->iconifyAmigaAMP = (value == '1');
         }
         Close(file);
+    }
+
+    // Load AmigaAMp quit
+
+    sprintf(filepath, TUNEFINDER_DIR ENV_QUIT_AMIGAAMP);
+    file = Open(filepath, MODE_OLDFILE);
+    if (file) {
+        char value;
+        if (Read(file, &value, 1) == 1) {
+            settings->quitAmigaAMP = (value == '1');
+        }
+        Close(file);
+        } else {
+        settings->quitAmigaAMP = TRUE;  // Default to true for backward compatibility
     }
 
     // Load country code

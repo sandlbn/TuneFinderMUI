@@ -88,6 +88,10 @@ aminet-release: $(OUTDIR)/$(PROGRAM_NAME)
 	# Copy installer
 	cp $(ICON_DIR)/Install.info $(RELEASE_DIR)/$(AMINET_NAME)/Install_TuneFinder.info
 	cp assets/install/Install_TuneFinder $(RELEASE_DIR)/$(AMINET_NAME)/Install_TuneFinder
+	# Create and copy guide
+	mkdir -p $(RELEASE_DIR)/$(AMINET_NAME)/Docs
+	cp assets/amigaguide/$(AMINET_NAME).guide $(RELEASE_DIR)/$(AMINET_NAME)/Docs/
+	cp assets/amigaguide/$(AMINET_NAME).guide.info $(RELEASE_DIR)/$(AMINET_NAME)/Docs/
 	# Create archive
 	cd $(RELEASE_DIR) && lha -ao5 ../$(AMINET_NAME).lha .
 	$(info Aminet release created: $(AMINET_NAME).lha)
