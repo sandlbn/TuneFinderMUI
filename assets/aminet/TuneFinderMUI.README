@@ -2,7 +2,7 @@ Short:        Search+play online radio stations (MUI)
 Author:       marcin@spoczynski.com (Marcin Spoczynski)
 Uploader:     marcin@spoczynski.com (Marcin Spoczynski)
 Type:         comm/misc
-Version:      0.1-beta
+Version:      0.2-beta
 Architecture: m68k-amigaos >= 3.0
 Requires:     MUI 3.8+
 Distribution: Aminet
@@ -33,6 +33,11 @@ Requirements:
 - TCP/IP stack
 
 Credits:
+- Developed by Marcin Spoczynski @sandlbn
 - Interface design by Philippe Carpentier @flype44 
 - Icons design by Thomas Blatt
-- Developed by Marcin Spoczynski @sandlbn
+
+TuneFinderMUI 0.2 beta (23.12.2024)
+
+- Added TuneFinderMUI guide
+- Add option to keep AmigaAMP running after TuneFinderMUI exit
