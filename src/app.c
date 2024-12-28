@@ -31,6 +31,7 @@
 #include "../include/locale.h"
 #include "../include/utils.h"
 #include "../include/amigaamp.h"
+#include "../include/countries.h"
 #include "../include/country_config.h"
 #include "../include/settings.h"
 #include "../include/favorites.h"
@@ -316,11 +317,10 @@ BOOL APP_Tune_Active(void) {
     if (tune) {
       sprintf(buf, "\33b%s", tune->name);
       set(objApp->TXT_Tune_Name, MUIA_Text_Contents, buf);
-      set(objApp->TXT_Tune_URL, MUIA_Text_Contents, tune->url);
-      sprintf(buf, "%s, %s, %s", tune->codec, tune->bitrate,
-              tune->country);
+      sprintf(buf, "\33bURL: \033n%s", tune->url);
+      set(objApp->TXT_Tune_URL, MUIA_Text_Contents, buf);
+      sprintf(buf, "\033bCodec:\033n %s, \033bBitrate:\033n %s, \033bCountry:\033n %s", tune->codec, tune->bitrate, GetCountryNameFromCode(tune->country));
       set(objApp->TXT_Tune_Details, MUIA_Text_Contents, buf);
-
       set(objApp->BTN_Tune_Play, MUIA_Disabled, FALSE);
       set(objApp->BTN_Tune_Stop, MUIA_Disabled, FALSE);
       set(objApp->BTN_Tune_Save, MUIA_Disabled, FALSE);
