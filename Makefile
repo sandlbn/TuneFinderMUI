@@ -29,6 +29,7 @@ SOURCES = \
 	$(SRCDIR)/unicode.c \
 	$(SRCDIR)/locale.c \
 	$(SRCDIR)/country_config.c \
+	$(SRCDIR)/countries.c \
 	$(SRCDIR)/utils.c \
 	$(SRCDIR)/favorites.c \
 	$(SRCDIR)/amigaamp.c

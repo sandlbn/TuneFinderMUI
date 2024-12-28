@@ -18,6 +18,7 @@
 #include "../include/main.h"
 #include "../include/network.h"
 #include "../include/settings.h"
+#include "../include/countries.h"
 #include "../include/country_config.h"
 #include "../include/unicode.h"
 

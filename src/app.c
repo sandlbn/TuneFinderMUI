@@ -31,6 +31,7 @@
 #include "../include/locale.h"
 #include "../include/utils.h"
 #include "../include/amigaamp.h"
+#include "../include/countries.h"
 #include "../include/country_config.h"
 #include "../include/settings.h"
 #include "../include/favorites.h"
@@ -299,6 +300,7 @@ BOOL APP_Settings_API_Limit_Inc(void)
 BOOL APP_Tune_Active(void) {
   LONG index;
   static char buf[1024];
+  char urlBuf[512];
 
   DEBUG("%s", "APP_Tune_Active()\n");
   get(objApp->LSV_Tune_List, MUIA_List_Active, &index);
@@ -316,11 +318,15 @@ BOOL APP_Tune_Active(void) {
     if (tune) {
       sprintf(buf, "\33b%s", tune->name);
       set(objApp->TXT_Tune_Name, MUIA_Text_Contents, buf);
-      set(objApp->TXT_Tune_URL, MUIA_Text_Contents, tune->url);
-      sprintf(buf, "%s, %s, %s", tune->codec, tune->bitrate,
-              tune->country);
+      if (tune->url && *tune->url) {
+        snprintf(urlBuf, sizeof(urlBuf), "\33bURL: \033n%s", tune->url);
+        set(objApp->TXT_Tune_URL, MUIA_Text_Contents, urlBuf);
+        } else {
+            set(objApp->TXT_Tune_URL, MUIA_Text_Contents, "\33bURL: \033nUnknown");
+      }
+      sprintf(buf, "\033bCodec:\033n %s, \033bBitrate:\033n %s, \033bCountry:\033n %s", tune->codec, tune->bitrate,
+      (tune->country && *tune->country) ? GetCountryNameFromCode(tune->country) : "Unknown");
       set(objApp->TXT_Tune_Details, MUIA_Text_Contents, buf);
-
       set(objApp->BTN_Tune_Play, MUIA_Disabled, FALSE);
       set(objApp->BTN_Tune_Stop, MUIA_Disabled, FALSE);
       set(objApp->BTN_Tune_Save, MUIA_Disabled, FALSE);
@@ -836,14 +842,22 @@ VOID CreateWindowMain(struct ObjApp *obj) {
   obj->BTN_Tune_Play, Child, obj->TXT_Tune_URL, Child, obj->BTN_Tune_Stop,
   Child, obj->TXT_Tune_Details, Child, obj->BTN_Tune_Save, End;
 
-  group4 = GroupObject,
-  MUIA_Group_Rows, 2, 
-  MUIA_Group_SameHeight, TRUE, 
-  Child, obj->BTN_Fav_Add,
-  Child, obj->BTN_Fav_Remove,
-  Child, obj->BTN_Save, 
-  Child, obj->BTN_Quit,
-  End;
+group4 = GroupObject,
+   MUIA_Group_Horiz, TRUE,           
+   MUIA_Group_SameWidth, FALSE,  
+   Child, HGroup,
+       MUIA_Group_SameWidth, TRUE,
+       Child, obj->BTN_Fav_Add,
+       Child, obj->BTN_Fav_Remove,
+       Child, obj->BTN_Save,
+       End,
+   Child, HGroup,
+       MUIA_Weight, 50, 
+       MUIA_Group_SameWidth, TRUE,
+       Child, obj->BTN_Settings = SimpleButton(GetTFString(MSG_STATE_SETTINGS)),
+       Child, obj->BTN_Quit,
+       End,
+   End;
 
   group0 = GroupObject, MUIA_Group_Columns, 1, MUIA_Group_SameWidth, TRUE,
   Child, group1, Child, group2, Child, group3, Child, group4, End;
@@ -895,8 +909,8 @@ void CreateWindowMainEvents(struct ObjApp *obj) {
 
   DoMethod(obj->BTN_Quit, MUIM_Notify, MUIA_Pressed, FALSE, obj->App, 2,
            MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
-
-
+  DoMethod(obj->BTN_Settings, MUIM_Notify, MUIA_Pressed, FALSE, 
+       obj->App, 2, MUIM_Application_ReturnID, EVENT_SETTINGS);
   // Window
   DoMethod(obj->WIN_Main, MUIM_Notify, MUIA_Window_CloseRequest, TRUE,
            obj->WIN_Main, 3, MUIM_Set, MUIA_Window_Open, FALSE);
