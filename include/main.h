@@ -84,7 +84,7 @@ enum EVENT_IDS {
   EVENT_SETTINGS_BROWSE_AMIGAAMP,
   EVENT_FAV_ADD,
   EVENT_FAV_REMOVE
-};
+  };
 
 // Structures
 struct Tune {
@@ -148,6 +148,7 @@ struct ObjApp {
   APTR BTN_Settings_Save;
   APTR BTN_Settings_Cancel;
   APTR BTN_Settings_AmigaAmp_Browse;
+  APTR BTN_Settings;
   APTR STR_Settings_AmigaAmp;   // String for AmigaAmp path
   APTR CHK_Settings_Iconify;     // Checkbox for iconify option
   APTR CHK_Settings_QuitAmigaAMP;
