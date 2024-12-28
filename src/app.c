@@ -126,7 +126,7 @@ void CreateMenu(struct ObjApp *obj) {
   APTR menu1, menu2;
 
   // Create menu items
-    obj->MN_Project_Find = MakeMenuItem(GetTFString(MSG_ACTION_SEARCH), "F");        // "Find Tunes"
+    obj->MN_Project_Find = MakeMenuItem(GetTFString(MSG_ACTION_SEARCH), NULL);        // "Find Tunes"
     obj->MN_Project_Save = MakeMenuItem(GetTFString(MSG_ACTION_SAVE_ALL), "S");      // "Save Tunes"
     obj->MN_Project_About = MakeMenuItem(GetTFString(MSG_STATE_ABOUT), "?");         // "About"
     obj->MN_Project_About_MUI = MakeMenuItem("About MUI...", NULL);                  // Keep MUI specific text
@@ -141,7 +141,7 @@ void CreateMenu(struct ObjApp *obj) {
     MUIA_Menuitem_Shortcut, "F",
     End;
     obj->MN_Tune_Play = MakeMenuItem(GetTFString(MSG_ACTION_PLAY), "P");     // "Play Tune"
-    obj->MN_Tune_Stop = MakeMenuItem(GetTFString(MSG_ACTION_STOP), "T");     // "Stop Tune"
+    obj->MN_Tune_Stop = MakeMenuItem(GetTFString(MSG_ACTION_STOP), "O");     // "Stop Tune"
     obj->MN_Tune_Save = MakeMenuItem(GetTFString(MSG_ACTION_SAVE_ONE), NULL); // "Save Tune"
 
 
@@ -761,6 +761,7 @@ VOID CreateWindowMain(struct ObjApp *obj) {
   obj->BTN_Fav_Remove = SimpleButton(GetTFString(MSG_ACTION_FAV_REMOVE)),
   obj->BTN_Save = SimpleButton(GetTFString(MSG_ACTION_SAVE_ALL));   // "Save Tunes"
   obj->BTN_Quit = SimpleButton(GetTFString(MSG_ACTION_QUIT));       // "Quit"
+  obj->BTN_Settings = SimpleButton(GetTFString(MSG_STATE_SETTINGS)); // "Settings"
   obj->BTN_Tune_Play = SimpleButton(GetTFString(MSG_ACTION_PLAY));  // "Play Tune"
   obj->BTN_Tune_Stop = SimpleButton(GetTFString(MSG_ACTION_STOP));  // "Stop Tune"
   obj->BTN_Tune_Save = SimpleButton(GetTFString(MSG_ACTION_SAVE_ONE)); // "Save Tune"
@@ -844,19 +845,12 @@ VOID CreateWindowMain(struct ObjApp *obj) {
 
 group4 = GroupObject,
    MUIA_Group_Horiz, TRUE,           
-   MUIA_Group_SameWidth, FALSE,  
-   Child, HGroup,
-       MUIA_Group_SameWidth, TRUE,
-       Child, obj->BTN_Fav_Add,
-       Child, obj->BTN_Fav_Remove,
-       Child, obj->BTN_Save,
-       End,
-   Child, HGroup,
-       MUIA_Weight, 50, 
-       MUIA_Group_SameWidth, TRUE,
-       Child, obj->BTN_Settings = SimpleButton(GetTFString(MSG_STATE_SETTINGS)),
-       Child, obj->BTN_Quit,
-       End,
+   MUIA_Group_SameWidth, TRUE,
+    Child, obj->BTN_Fav_Add,
+    Child, obj->BTN_Fav_Remove,
+    Child, obj->BTN_Save,
+    Child, obj->BTN_Settings,
+    Child, obj->BTN_Quit,
    End;
 
   group0 = GroupObject, MUIA_Group_Columns, 1, MUIA_Group_SameWidth, TRUE,
