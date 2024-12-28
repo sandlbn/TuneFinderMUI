@@ -300,6 +300,7 @@ BOOL APP_Settings_API_Limit_Inc(void)
 BOOL APP_Tune_Active(void) {
   LONG index;
   static char buf[1024];
+  char urlBuf[512];
 
   DEBUG("%s", "APP_Tune_Active()\n");
   get(objApp->LSV_Tune_List, MUIA_List_Active, &index);
@@ -317,9 +318,14 @@ BOOL APP_Tune_Active(void) {
     if (tune) {
       sprintf(buf, "\33b%s", tune->name);
       set(objApp->TXT_Tune_Name, MUIA_Text_Contents, buf);
-      sprintf(buf, "\33bURL: \033n%s", tune->url);
-      set(objApp->TXT_Tune_URL, MUIA_Text_Contents, buf);
-      sprintf(buf, "\033bCodec:\033n %s, \033bBitrate:\033n %s, \033bCountry:\033n %s", tune->codec, tune->bitrate, GetCountryNameFromCode(tune->country));
+      if (tune->url && *tune->url) {
+        snprintf(urlBuf, sizeof(urlBuf), "\33bURL: \033n%s", tune->url);
+        set(objApp->TXT_Tune_URL, MUIA_Text_Contents, urlBuf);
+        } else {
+            set(objApp->TXT_Tune_URL, MUIA_Text_Contents, "\33bURL: \033nUnknown");
+      }
+      sprintf(buf, "\033bCodec:\033n %s, \033bBitrate:\033n %s, \033bCountry:\033n %s", tune->codec, tune->bitrate,
+      (tune->country && *tune->country) ? GetCountryNameFromCode(tune->country) : "Unknown");
       set(objApp->TXT_Tune_Details, MUIA_Text_Contents, buf);
       set(objApp->BTN_Tune_Play, MUIA_Disabled, FALSE);
       set(objApp->BTN_Tune_Stop, MUIA_Disabled, FALSE);

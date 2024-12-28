@@ -45,6 +45,7 @@ static const struct CountryMapping country_mappings[] = {
     {"DE", "Germany"},
     {"GH", "Ghana"},
     {"GR", "Greece"},
+    ("GI", "Gibraltar"),
     {"GT", "Guatemala"},
     {"HT", "Haiti"},
     {"HN", "Honduras"},
