@@ -135,6 +135,7 @@ struct ObjApp {
   APTR BTN_Tune_Play;
   APTR BTN_Tune_Stop;
   APTR BTN_Tune_Save;
+  APTR BTN_Favorites;
 
   APTR STR_Settings_API_Host;
   APTR STR_Settings_API_Port;
