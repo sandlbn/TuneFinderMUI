@@ -756,7 +756,8 @@ VOID CreateWindowMain(struct ObjApp *obj) {
 
   // Controls
 
-  obj->BTN_Find = SimpleButton(GetTFString(MSG_ACTION_SEARCH));
+  obj->BTN_Find = SimpleButton(MakeBoldText(GetTFString(MSG_ACTION_SEARCH)));
+  obj->BTN_Favorites = SimpleButton(GetTFString(MSG_STATE_FAVORITES));
   obj->BTN_Fav_Add = SimpleButton(GetTFString(MSG_ACTION_FAV_ADD)),
   obj->BTN_Fav_Remove = SimpleButton(GetTFString(MSG_ACTION_FAV_REMOVE)),
   obj->BTN_Save = SimpleButton(GetTFString(MSG_ACTION_SAVE_ALL));   // "Save Tunes"
@@ -817,13 +818,30 @@ VOID CreateWindowMain(struct ObjApp *obj) {
 
   // Groups
 
-  group1 = GroupObject, MUIA_Frame, MUIV_Frame_Group, MUIA_FrameTitle,
-  "Tunes Filters", MUIA_Group_Columns, 4, Child, Label("Name"), Child,
-  obj->STR_Find_Name, Child, HSpace(10), Child, child1, Child, Label("Tags"),
-  Child, obj->STR_Find_Tags, Child, HSpace(10), Child, child2, Child,
-  Label("Codec"), Child, obj->CYC_Find_Codec, Child, HSpace(10), Child,
-  HSpace(10), Child, Label("Country"), Child, obj->CYC_Find_Country, Child,
-  HSpace(10), Child, obj->BTN_Find, End;
+group1 = GroupObject,
+   MUIA_Frame, MUIV_Frame_Group,
+   MUIA_FrameTitle, "Tunes Filters",
+   MUIA_Group_Columns, 4,
+   Child, Label("Name"),
+   Child, obj->STR_Find_Name,
+   Child, HSpace(10),
+   Child, child1,
+   
+   Child, Label("Tags"),
+   Child, obj->STR_Find_Tags,
+   Child, HSpace(10),
+   Child, child2,
+   
+   Child, Label("Codec"),
+   Child, obj->CYC_Find_Codec,
+   Child, HSpace(10),
+   Child, HSpace(10),
+   
+   Child, Label("Country"),
+   Child, obj->CYC_Find_Country,
+   Child, HSpace(10),
+   Child, obj->BTN_Find,
+   End;
 
   group2 = GroupObject, MUIA_Frame, MUIV_Frame_Group,
   MUIA_Background, MUII_GroupBack, MUIA_Group_Horiz, FALSE,
@@ -848,6 +866,7 @@ group4 = GroupObject,
    MUIA_Group_SameWidth, TRUE,
     Child, obj->BTN_Fav_Add,
     Child, obj->BTN_Fav_Remove,
+    Child, obj->BTN_Favorites,
     Child, obj->BTN_Save,
     Child, obj->BTN_Settings,
     Child, obj->BTN_Quit,
@@ -866,7 +885,7 @@ group4 = GroupObject,
 
   DoMethod(obj->WIN_Main, MUIM_Window_SetCycleChain, obj->STR_Find_Name,
            obj->STR_Find_Tags, obj->CYC_Find_Codec, obj->CYC_Find_Country,
-           obj->CHK_Find_HTTPS_Only, obj->CHK_Find_Hide_Broken, obj->BTN_Find,
+           obj->CHK_Find_HTTPS_Only, obj->CHK_Find_Hide_Broken, obj->BTN_Find, obj->BTN_Favorites,
            obj->LSV_Tune_List, obj->BTN_Tune_Play, obj->BTN_Tune_Stop,
            obj->BTN_Tune_Save, obj->BTN_Save, obj->BTN_Fav_Add, obj->BTN_Fav_Remove,
            obj->BTN_Quit, obj->WIN_Settings, 0);
@@ -875,6 +894,9 @@ void CreateWindowMainEvents(struct ObjApp *obj) {
   // Buttons
   DoMethod(obj->BTN_Find, MUIM_Notify, MUIA_Pressed, FALSE, obj->App, 2,
            MUIM_Application_ReturnID, EVENT_FIND);
+
+  DoMethod(obj->BTN_Favorites, MUIM_Notify, MUIA_Pressed, FALSE, obj->App, 2,
+           MUIM_Application_ReturnID, EVENT_FAVORITES);
 
   DoMethod(obj->BTN_Tune_Play, MUIM_Notify, MUIA_Pressed, FALSE, obj->App, 2,
            MUIM_Application_ReturnID, EVENT_TUNE_PLAY);

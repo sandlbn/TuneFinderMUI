@@ -252,3 +252,9 @@ BOOL SaveSingleStationToPLS(const struct Tune *station)
     return FALSE;
 
 }
+
+char* MakeBoldText(const char* text) {
+    static char buffer[256];
+    sprintf(buffer, "\033b%s\033n", text);
+    return buffer;
+}

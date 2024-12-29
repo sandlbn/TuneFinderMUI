@@ -13,4 +13,5 @@ void UpdateStatusMessage(const char *message);
 void SanitizeAmigaFilename(const char *input, char *output, size_t maxLen);
 BOOL EnsureSettingsPath(void);
 void cleanNonAscii(char *dst, const char *src, size_t maxLen);
+char* MakeBoldText(const char* text);
 #endif /* UTILS_H */
