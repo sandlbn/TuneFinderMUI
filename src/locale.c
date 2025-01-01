@@ -35,8 +35,8 @@ static const char *built_in_strings[] = {
     "Quit",         // 14
     "Save Tune",    // 15
     "Stop Tune",    // 16
-    "Fav+",         // 17
-    "Fav-",         // 18
+    "Add",         // 17
+    "Delete",         // 18
     NULL,           // 19
 
     // GUI States (20-28)
@@ -49,7 +49,7 @@ static const char *built_in_strings[] = {
     "Searching...", // 26
     "Favorites",    // 27
     "Iconify",      // 28
-    NULL,           // 29
+    "List",           // 29
 
     // Options and Settings (30-37)
     "API Host",     // 30
