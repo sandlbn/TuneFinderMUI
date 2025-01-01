@@ -244,6 +244,7 @@ BOOL APP_Tune_Details_Init(void) {
   set(objApp->BTN_Tune_Play, MUIA_Disabled, TRUE);
   set(objApp->BTN_Tune_Stop, MUIA_Disabled, TRUE);
   set(objApp->BTN_Tune_Save, MUIA_Disabled, TRUE);
+  set(objApp->BTN_Save, MUIA_Disabled, TRUE);
 
   return TRUE;
 }
@@ -330,6 +331,8 @@ BOOL APP_Tune_Active(void) {
       set(objApp->BTN_Tune_Play, MUIA_Disabled, FALSE);
       set(objApp->BTN_Tune_Stop, MUIA_Disabled, FALSE);
       set(objApp->BTN_Tune_Save, MUIA_Disabled, FALSE);
+      set(objApp->BTN_Save, MUIA_Disabled, FALSE);
+
     }
   }
 
@@ -757,7 +760,7 @@ VOID CreateWindowMain(struct ObjApp *obj) {
   // Controls
 
   obj->BTN_Find = SimpleButton(MakeBoldText(GetTFString(MSG_ACTION_SEARCH)));
-  obj->BTN_Favorites = SimpleButton(GetTFString(MSG_STATE_FAVORITES));
+  obj->BTN_Favorites = SimpleButton(GetTFString(MSG_STATE_FAVORITES_LIST));
   obj->BTN_Fav_Add = SimpleButton(GetTFString(MSG_ACTION_FAV_ADD)),
   obj->BTN_Fav_Remove = SimpleButton(GetTFString(MSG_ACTION_FAV_REMOVE)),
   obj->BTN_Save = SimpleButton(GetTFString(MSG_ACTION_SAVE_ALL));   // "Save Tunes"
@@ -855,23 +858,40 @@ group1 = GroupObject,
   MUIA_List_Title, TRUE, MUIA_List_DisplayHook, &DisplayHook,
   End, End, Child,
   obj->LAB_Tune_Result, End, End;
-
-  group3 = GroupObject, MUIA_Frame, MUIV_Frame_Group, MUIA_FrameTitle,
-  "Tune Details", MUIA_Group_Columns, 2, Child, obj->TXT_Tune_Name, Child,
-  obj->BTN_Tune_Play, Child, obj->TXT_Tune_URL, Child, obj->BTN_Tune_Stop,
-  Child, obj->TXT_Tune_Details, Child, obj->BTN_Tune_Save, End;
-
-group4 = GroupObject,
-   MUIA_Group_Horiz, TRUE,           
-   MUIA_Group_SameWidth, TRUE,
-    Child, obj->BTN_Fav_Add,
-    Child, obj->BTN_Fav_Remove,
-    Child, obj->BTN_Favorites,
+  
+group3 = GroupObject, 
+    MUIA_Frame, MUIV_Frame_Group, 
+    MUIA_FrameTitle, "Tune Details", 
+    MUIA_Group_Columns, 2, 
+    Child, HSpace(0),             // Empty space
+    Child, obj->BTN_Tune_Play,    // Play button
+    Child, obj->TXT_Tune_Name,
+    Child, obj->BTN_Tune_Stop,    // Stop button
+    Child, obj->TXT_Tune_URL,     // URL
+    Child, obj->BTN_Tune_Save,    // Save single tune
+    Child, obj->TXT_Tune_Details, // Details
     Child, obj->BTN_Save,
-    Child, obj->BTN_Settings,
-    Child, obj->BTN_Quit,
-   End;
+    End;
 
+// Bottom groups
+group4 = HGroup,
+    MUIA_Group_SameWidth, TRUE,
+    Child, VGroup,
+        MUIA_Frame, MUIV_Frame_Group,
+        MUIA_FrameTitle, "Favorites",
+        MUIA_Group_Horiz, TRUE,
+        Child, obj->BTN_Fav_Add,
+        Child, obj->BTN_Fav_Remove,
+        Child, obj->BTN_Favorites,
+        End,
+    Child, VGroup,
+        MUIA_Frame, MUIV_Frame_Group,
+        MUIA_FrameTitle, "System",
+        MUIA_Group_Horiz, TRUE,
+        Child, obj->BTN_Settings,
+        Child, obj->BTN_Quit,
+        End,
+    End;
   group0 = GroupObject, MUIA_Group_Columns, 1, MUIA_Group_SameWidth, TRUE,
   Child, group1, Child, group2, Child, group3, Child, group4, End;
 
