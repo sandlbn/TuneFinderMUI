@@ -250,8 +250,7 @@ BOOL APP_Find(void)
     endTime = IntuitionBase->Seconds;
     ULONG duration = endTime - startTime;
     set(objApp->LSV_Tune_List, MUIA_List_Quiet, FALSE);
-    sprintf(buf, "Found %ld tune(s), in %lu second(s) [Limit: %lu].", 
-            numEntries, duration, settings.limit);
+    GetTFFormattedString(buf, sizeof(buf), MSG_STATUS_SEARCH_RESULT, numEntries, duration, settings.limit);
     set(objApp->LAB_Tune_Result, MUIA_Text_Contents, buf);
     
     set(objApp->LSV_Tune_List, MUIA_List_Active, MUIV_List_Active_Top);
@@ -380,7 +379,7 @@ int main(void) {
             {
 
                 req = AllocAslRequestTags(ASL_FileRequest,
-                    ASLFR_TitleText, "Select AmigaAmp executable",
+                    ASLFR_TitleText, GetTFString(MSG_ASLREQ_SELECT_AMIGAAMP),
                     ASLFR_DoPatterns, TRUE,
                     ASLFR_InitialPattern, "#?",
                     TAG_DONE);

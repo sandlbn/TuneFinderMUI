@@ -1,0 +1,312 @@
+; TuneFinderMUI Catalog Description File
+; $VER: tunefinderMUI.cd 1.0 (5.1.2024)
+;
+MSG_GUI_NAME (/1/)
+Name
+;
+MSG_GUI_COUNTRY (/2/)
+Country
+;
+MSG_GUI_CODEC (/3/)
+Codec
+;
+MSG_GUI_TAGS (/4/)
+Tags
+;
+MSG_GUI_BITRATE (/5/)
+BitRate
+;
+MSG_GUI_UNKNOWN (/6/)
+Unknown
+;
+MSG_GUI_LIMIT (/7/)
+Limit
+;
+MSG_GUI_URL (/8/)
+URL
+;
+MSG_ACTION_SEARCH (/10/)
+Find Tunes
+;
+MSG_ACTION_SAVE_ALL (/11/)
+Save Tunes
+;
+MSG_ACTION_CANCEL (/12/)
+Cancel
+;
+MSG_ACTION_PLAY (/13/)
+Play Tune
+;
+MSG_ACTION_QUIT (/14/)
+Quit
+;
+MSG_ACTION_SAVE_ONE (/15/)
+Save Tune
+;
+MSG_ACTION_STOP (/16/)
+Stop Tune
+;
+MSG_ACTION_FAV_ADD (/17/)
+Add
+;
+MSG_ACTION_FAV_REMOVE (/18/)
+Delete
+;
+MSG_STATE_READY (/20/)
+Ready
+;
+MSG_STATE_SETTINGS (/21/)
+Settings...
+;
+MSG_STATE_API_SETTINGS (/22/)
+API Settings
+;
+MSG_STATE_STATION_DETAILS (/23/)
+Tune Details
+;
+MSG_STATE_PROJECT (/24/)
+Project
+;
+MSG_STATE_ABOUT (/25/)
+About
+;
+MSG_STATE_SEARCHING (/26/)
+Searching...
+;
+MSG_STATE_FAVORITES (/27/)
+Favorites
+;
+MSG_STATE_ICONIFY (/28/)
+Iconify
+;
+MSG_STATE_FAVORITES_LIST (/29/)
+List
+;
+MSG_OPTION_API_HOST (/30/)
+API Host
+;
+MSG_OPTION_API_PORT (/31/)
+API Port
+;
+MSG_OPTION_HTTPS_ONLY (/32/)
+HTTPS Only
+;
+MSG_OPTION_HIDE_BROKEN (/33/)
+Hide Broken
+;
+MSG_OPTION_AUTOSTART (/34/)
+Autostart
+;
+MSG_OPTION_BROWSE (/35/)
+Browse
+;
+MSG_OPTION_SELECT_PROGRAM (/36/)
+Select Program
+;
+MSG_OPTION_ICONIFY_AMIGAAMP (/37/)
+Iconify AmigaAmp
+;
+MSG_OPTION_QUIT_AMIGAAMP (/38/)
+Quit AmigaAmp on Exit
+;
+MSG_STATUS_FOUND_STATIONS (/40/)
+Found %d tune(s), in 0.8 second(s)
+;
+MSG_STATUS_PLAYING (/41/)
+Playing: %s
+;
+MSG_STATUS_SETTINGS_LOADED (/42/)
+Settings loaded.
+;
+MSG_STATUS_SETTINGS_SAVED (/43/)
+Settings saved.
+;
+MSG_STATUS_SEARCH_COMPLETE (/44/)
+Search completed. Found %d tunes.
+;
+MSG_STATUS_FILE_SAVED (/45/)
+File saved: %s
+;
+MSG_STATUS_SETTINGS_SAVED_HOST (/46/)
+Settings saved: %s:%u
+;
+MSG_STATUS_NO_STATIONS (/47/)
+No tunes.
+;
+MSG_STATUS_ADDED_FAV (/48/)
+Added to favorites
+;
+MSG_STATUS_REMOVED_FAV (/49/)
+Removed from favorites
+;
+MSG_ERR_INVALID_PORT (/50/)
+Invalid port number, keeping current: %ld
+;
+MSG_ERR_WRITE_PORT (/51/)
+Failed to write port setting
+;
+MSG_ERR_WRITE_HOST (/52/)
+Failed to write host setting
+;
+MSG_ERR_INVALID_LIMIT (/53/)
+Invalid limit number, keeping current: %ld
+;
+MSG_ERR_WRITE_LIMIT (/54/)
+Failed to write limit setting
+;
+MSG_ERR_ADD_FAV (/55/)
+Failed to add to favorites
+;
+MSG_ERR_REMOVE_FAV (/56/)
+Failed to remove from favorites
+;
+MSG_ERR_SAVE_FILE (/60/)
+Failed to save file
+;
+MSG_ERR_ACCESS_FILE (/61/)
+Failed to access %s
+;
+MSG_ERR_CREATE_PORT_FILE (/62/)
+Failed to create port settings file: %s
+;
+MSG_ERR_CREATE_HOST_FILE (/63/)
+Failed to create host settings file: %s
+;
+MSG_ERR_CREATE_LIMIT_FILE (/64/)
+Failed to create limit settings file: %s
+;
+MSG_ERR_CREATE_AUTOSTART_FILE (/65/)
+Failed to create autostart settings file: %s
+;
+MSG_ERR_WRITE_AUTOSTART (/66/)
+Failed to write autostart setting
+;
+MSG_ERR_DIR_CREATED (/70/)
+Created settings directory: %s
+;
+MSG_ERR_DIR_CREATE_FAILED (/71/)
+Failed to create directory: %s
+;
+MSG_ERR_HTTP_REQUEST (/80/)
+HTTP request failed
+;
+MSG_ERR_RESOLVE_HOST (/81/)
+Failed to resolve host
+;
+MSG_ERR_CONNECT (/82/)
+Failed to connect to server
+;
+MSG_ERR_SEND_REQUEST (/83/)
+Failed to send request
+;
+MSG_ERR_TIMEOUT (/84/)
+Timeout waiting for data
+;
+MSG_ERR_CREATE_SOCKET (/85/)
+Failed to create socket
+;
+MSG_ERR_ALLOC_BUFFERS (/86/)
+Failed to allocate buffers
+;
+MSG_ERR_INVALID_HOST (/87/)
+Invalid host
+;
+MSG_ERR_START_PLAYBACK (/90/)
+Failed to start playback
+;
+MSG_ERR_AMIGAAMP_NOT_RUNNING (/91/)
+AmigaAMP is not running
+;
+MSG_ERR_PLAYBACK_STOPPED (/92/)
+Playback stopped
+;
+MSG_FAILED_CREATE_REQUEST (/93/)
+Failed to create request
+;
+MSG_FAILED_HTTP_REQ (/94/)
+HTTP request failed
+;
+MSG_FAILED_PARSE_RESP (/95/)
+Failed to parse response
+;
+MSG_SEARCHING (/96/)
+Searching
+;
+MSG_FAILED_CR_SOC (/97/)
+Failed to create socket
+;
+MSG_FAILED_ALL_BUFF (/98/)
+Failed to allocate buffers
+;
+MSG_FAILED_RESOLV_HOST (/99/)
+Failed to resolve host
+;
+MSG_FAILED_CONN_SERV (/100/)
+Failed to connect to server
+;
+MSG_FAILED_SEND_REQ (/101/)
+Failed to send request
+;
+MSG_TIMEOUT (/102/)
+Connection timeout
+;
+MSG_OPTION_FILTERS (/110/)
+Tune Filters
+;
+MSG_GROUP_TUNE_DETAILS (/111/)
+Tune Details
+;
+MSG_GROUP_FAVORITES (/112/)
+Favorites
+;
+MSG_GROUP_SYSTEM (/113/)
+System
+;
+MSG_ERR_FAILED_CREAT_HOST_SET_FILE (/120/)
+Failed to create host settings file: %s
+;
+MSG_FAILED_CREAT_PORT_FILE (/121/)
+Failed to create port settings file: %s
+;
+MSG_FAILED_WRITE_PORT_SET (/122/)
+Failed to write port setting
+;
+MSG_FAILED_CREAT_LIMIT_FILE (/123/)
+Failed to create limit settings file: %s
+;
+MSG_FAILED_WRITE_LIMIT_SET (/124/)
+Failed to write limit setting
+;
+MSG_FAILED_CREAT_AUTO_FILE (/125/)
+Failed to create autostart settings file: %s
+;
+MSG_FAILED_WRITE_AUTO_SET (/126/)
+Failed to write autostart setting
+;
+MSG_SET_SAVED (/127/)
+Settings saved: %s:%u (limit: %u)
+;
+MSG_INVALID_PORT (/128/)
+Invalid port number, using default: %d
+;
+MSG_SETTINGS_LOADED (/129/)
+Settings loaded
+;
+MSG_STATUS_LOADED_FAVORITES (/130/)
+Loaded %ld favorites
+;
+MSG_STATUS_NO_FAVORITES (/131/)
+No favorites found
+;
+MSG_ASLREQ_SELECT_AMIGAAMP (/140/)
+Select AmigaAmp executable
+;
+MSG_STATUS_SEARCH_RESULT (/141/)
+Found %ld tune(s), in %lu second(s) [Limit: %lu]
+;
+MSG_STATUS_ALREADY_FAV (/142/)
+Station already in favorites
+;
+MSG_STATUS_NOT_IN_FAV (/143/)
+Station not in favorites
+;

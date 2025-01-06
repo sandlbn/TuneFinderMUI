@@ -7,7 +7,7 @@
 #include "../include/locale.h"
 #include "../include/main.h"
 
-#define CATALOG_NAME "tunefinder.catalog"
+#define CATALOG_NAME "tunefinderMUI.catalog"
 #define CATALOG_VERSION 1
 
 // static struct Library *LocaleBase = NULL;
@@ -137,7 +137,24 @@ static const char *built_in_strings[] = {
     "Failed to connect to server",        // 100
     "Failed to send request",             // 101
     "Connection timeout",                 // 102
-    // Settings messages (120-129)
+    NULL,           // 103
+    NULL,           // 104
+    NULL,           // 105
+    NULL,           // 106
+    NULL,           // 107
+    NULL,           // 108
+    NULL,           // 109
+    // UI Groups (110-113)
+    "Tune Filters",        // 110
+    "Tune Details",        // 111
+    "Favorites",          // 112
+    "System",            // 113
+    NULL,           // 114
+    NULL,           // 115
+    NULL,           // 116
+    NULL,           // 117
+    NULL,           // 118
+    NULL,           // 119
     "Failed to create host settings file: %s",  // 120
     "Failed to create port settings file: %s",  // 121
     "Failed to write port setting",             // 122
@@ -148,7 +165,21 @@ static const char *built_in_strings[] = {
     "Settings saved: %s:%u (limit: %u)",        // 127
     "Invalid port number, using default: %d",   // 128
     "Settings loaded",                          // 129
-
+    // Favorites Status (130-131)
+    "Loaded %ld favorites",    // 130
+    "No favorites found",      // 131
+    NULL,           // 132
+    NULL,           // 133
+    NULL,           // 134
+    NULL,           // 135
+    NULL,           // 136
+    NULL,           // 137
+    NULL,           // 138
+    NULL,           // 139
+    "Select AmigaAmp executable",     // 140
+    "Found %ld tune(s), in %lu second(s) [Limit: %lu]",  // 141
+    "Station already in favorites",   // 142
+    "Station not in favorites",       // 143
     NULL  // Final terminator
 };
 BOOL InitLocaleSystem(void) {
