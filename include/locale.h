@@ -26,7 +26,7 @@ enum {
     MSG_ACTION_FAV_ADD,
     MSG_ACTION_FAV_REMOVE,
 
-    // GUI States (20-28)
+    // GUI States (20-29)
     MSG_STATE_READY = 20,
     MSG_STATE_SETTINGS,
     MSG_STATE_API_SETTINGS,
@@ -37,7 +37,8 @@ enum {
     MSG_STATE_FAVORITES,
     MSG_STATE_ICONIFY,
     MSG_STATE_FAVORITES_LIST,
-    // Options and Settings (30-37)
+
+    // Options and Settings (30-39)
     MSG_OPTION_API_HOST = 30,
     MSG_OPTION_API_PORT,
     MSG_OPTION_HTTPS_ONLY,
@@ -47,6 +48,7 @@ enum {
     MSG_OPTION_SELECT_PROGRAM,
     MSG_OPTION_ICONIFY_AMIGAAMP,
     MSG_OPTION_QUIT_AMIGAAMP,
+
     // Status Messages (40-49)
     MSG_STATUS_FOUND_STATIONS = 40,
     MSG_STATUS_PLAYING,
@@ -107,17 +109,32 @@ enum {
     MSG_FAILED_CONN_SERV = 100,
     MSG_FAILED_SEND_REQ = 101,
     MSG_TIMEOUT = 102,
-    MSG_ERR_FAILED_CREAT_HOST_SET_FILE = 120,  // "Failed to create host settings file: %s"
-    MSG_FAILED_CREAT_PORT_FILE,                // "Failed to create port settings file: %s"
-    MSG_FAILED_WRITE_PORT_SET,                 // "Failed to write port setting"
-    MSG_FAILED_CREAT_LIMIT_FILE,               // "Failed to create limit settings file: %s"
-    MSG_FAILED_WRITE_LIMIT_SET,                // "Failed to write limit setting"
-    MSG_FAILED_CREAT_AUTO_FILE,                // "Failed to create autostart settings file: %s"
-    MSG_FAILED_WRITE_AUTO_SET,                 // "Failed to write autostart setting"
-    MSG_SET_SAVED,                             // "Settings saved: %s:%u (limit: %u)"
-    MSG_INVALID_PORT,                          // "Invalid port number, using default: %d"
-    MSG_SETTINGS_LOADED,                       // "Settings loaded"
 
+    // UI Groups (110-113)
+    MSG_OPTION_FILTERS = 110,
+    MSG_GROUP_TUNE_DETAILS,
+    MSG_GROUP_FAVORITES,
+    MSG_GROUP_SYSTEM,
+
+    // Settings messages (120-129)
+    MSG_ERR_FAILED_CREAT_HOST_SET_FILE = 120,
+    MSG_FAILED_CREAT_PORT_FILE,
+    MSG_FAILED_WRITE_PORT_SET,
+    MSG_FAILED_CREAT_LIMIT_FILE,
+    MSG_FAILED_WRITE_LIMIT_SET,
+    MSG_FAILED_CREAT_AUTO_FILE,
+    MSG_FAILED_WRITE_AUTO_SET,
+    MSG_SET_SAVED,
+    MSG_INVALID_PORT,
+    MSG_SETTINGS_LOADED,
+
+    // Favorites Status (130-131)
+    MSG_STATUS_LOADED_FAVORITES = 130,
+    MSG_STATUS_NO_FAVORITES = 131,
+    MSG_ASLREQ_SELECT_AMIGAAMP = 140,   // "Select AmigaAmp executable"
+    MSG_STATUS_SEARCH_RESULT = 141,      // "Found %ld tune(s), in %lu second(s) [Limit: %lu]"
+    MSG_STATUS_ALREADY_FAV = 142,    // "Station already in favorites"
+    MSG_STATUS_NOT_IN_FAV = 143     // "Station not in favorites"
 
 };
 

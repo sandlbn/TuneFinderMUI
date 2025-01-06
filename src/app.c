@@ -508,7 +508,7 @@ BOOL APP_Fav_Add(void)
                     return TRUE;
                 }
             } else {
-                UpdateStatusMessage("Station already in favorites");
+                UpdateStatusMessage(GetTFString(MSG_STATUS_ALREADY_FAV));
             }
         }
         else
@@ -543,7 +543,7 @@ BOOL APP_Fav_Remove(void)
                     return TRUE;
                 }
             } else {
-                UpdateStatusMessage("Station not in favorites");
+                UpdateStatusMessage(GetTFString(MSG_STATUS_NOT_IN_FAV));
             }
         }
         else
@@ -823,24 +823,24 @@ VOID CreateWindowMain(struct ObjApp *obj) {
 
 group1 = GroupObject,
    MUIA_Frame, MUIV_Frame_Group,
-   MUIA_FrameTitle, "Tunes Filters",
+   MUIA_FrameTitle, GetTFString(MSG_OPTION_FILTERS),
    MUIA_Group_Columns, 4,
-   Child, Label("Name"),
+   Child, Label(GetTFString(MSG_GUI_NAME)),
    Child, obj->STR_Find_Name,
    Child, HSpace(10),
    Child, child1,
    
-   Child, Label("Tags"),
+   Child, Label(GetTFString(MSG_GUI_TAGS)),
    Child, obj->STR_Find_Tags,
    Child, HSpace(10),
    Child, child2,
    
-   Child, Label("Codec"),
+   Child, Label(GetTFString(MSG_GUI_CODEC)),
    Child, obj->CYC_Find_Codec,
    Child, HSpace(10),
    Child, HSpace(10),
    
-   Child, Label("Country"),
+   Child, Label(GetTFString(MSG_GUI_COUNTRY)),
    Child, obj->CYC_Find_Country,
    Child, HSpace(10),
    Child, obj->BTN_Find,
@@ -861,7 +861,7 @@ group1 = GroupObject,
   
 group3 = GroupObject, 
     MUIA_Frame, MUIV_Frame_Group, 
-    MUIA_FrameTitle, "Tune Details", 
+    MUIA_FrameTitle, GetTFString(MSG_GROUP_TUNE_DETAILS), 
     MUIA_Group_Columns, 2, 
     Child, HSpace(0),             // Empty space
     Child, obj->BTN_Tune_Play,    // Play button
@@ -878,7 +878,7 @@ group4 = HGroup,
     MUIA_Group_SameWidth, TRUE,
     Child, VGroup,
         MUIA_Frame, MUIV_Frame_Group,
-        MUIA_FrameTitle, "Favorites",
+        MUIA_FrameTitle, GetTFString(MSG_GROUP_FAVORITES),
         MUIA_Group_Horiz, TRUE,
         Child, obj->BTN_Fav_Add,
         Child, obj->BTN_Fav_Remove,
@@ -886,7 +886,7 @@ group4 = HGroup,
         End,
     Child, VGroup,
         MUIA_Frame, MUIV_Frame_Group,
-        MUIA_FrameTitle, "System",
+        MUIA_FrameTitle, GetTFString(MSG_GROUP_SYSTEM),
         MUIA_Group_Horiz, TRUE,
         Child, obj->BTN_Settings,
         Child, obj->BTN_Quit,
@@ -1230,12 +1230,12 @@ BOOL APP_ShowFavorites(void)
         
         set(objApp->LSV_Tune_List, MUIA_List_Quiet, FALSE);
         char buf[256];
-        sprintf(buf, "Loaded %ld favorites", count);
+        GetTFFormattedString(buf, sizeof(buf), MSG_STATUS_LOADED_FAVORITES, count);
         set(objApp->LAB_Tune_Result, MUIA_Text_Contents, buf);
     }
     else
     {
-        set(objApp->LAB_Tune_Result, MUIA_Text_Contents, "No favorites found");
+        set(objApp->LAB_Tune_Result, MUIA_Text_Contents,GetTFString(MSG_STATUS_NO_FAVORITES));
     }
     
     return TRUE;
