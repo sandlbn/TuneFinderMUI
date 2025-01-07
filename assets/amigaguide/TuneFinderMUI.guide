@@ -57,7 +57,7 @@ The main window provides several search fields:
 @{b}Codec@{ub} - Choose audio codec (MP3, AAC, OGG, FLAC)
 
 @{b}Additional Filters@{ub}:
-- HTTPS Only: Show only secure stations
+- Incl. HTTPS: Include secure stations in search result
 - Hide Broken: Hide broken stations
 
 @{"Back to Main" link Main}
