@@ -776,7 +776,7 @@ VOID CreateWindowMain(struct ObjApp *obj) {
   obj->CHK_Find_HTTPS_Only = CheckMark(FALSE);
   obj->CHK_Find_Hide_Broken = CheckMark(FALSE);
     
-  lbl1 = Label2(GetTFString(MSG_OPTION_HTTPS_ONLY));    // "HTTPS Only"
+  lbl1 = Label2(GetTFString(MSG_OPTION_INCL_HTTPS));    // "HTTPS Only"
   lbl2 = Label2(GetTFString(MSG_OPTION_HIDE_BROKEN));   // "Hide Broken"
 
 

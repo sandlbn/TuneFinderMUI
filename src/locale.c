@@ -14,7 +14,6 @@
 static struct Catalog *Catalog = NULL;
 
 // Built-in default strings (English)
-// locale.c
 static const char *built_in_strings[] = {
     // GUI Labels (1-8)
     "Name",         // 1
@@ -54,7 +53,7 @@ static const char *built_in_strings[] = {
     // Options and Settings (30-37)
     "API Host",     // 30
     "API Port",     // 31
-    "HTTPS Only",   // 32
+    "Incl. HTTPS",   // 32
     "Hide Broken",  // 33
     "Autostart",    // 34
     "Browse",       // 35

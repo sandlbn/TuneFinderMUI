@@ -137,9 +137,9 @@ char *build_search_url(const struct APISettings *settings,
         space_left = MAX_URL_LENGTH - pos;
         
         // Add HTTPS parameter
-        if (params->is_https && space_left > 0)
+        if (!params->is_https && space_left > 0)
         {
-            pos += snprintf(url + pos, space_left, "is_https=true&");
+            pos += snprintf(url + pos, space_left, "is_https=false&");
             space_left = MAX_URL_LENGTH - pos;
         }
         
