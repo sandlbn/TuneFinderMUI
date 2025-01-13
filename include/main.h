@@ -31,8 +31,8 @@
 
 // Application defines
 #define APP_NAME "TuneFinder MUI"
-#define APP_DATE "07.01.2025"
-#define APP_VERSION "0.5-beta"
+#define APP_DATE "12.01.2025"
+#define APP_VERSION "0.6-beta"
 #define APP_VERSTRING "$VER: " APP_NAME " " APP_VERSION " (" APP_DATE ")"
 #define APP_AUTHORS "Coding: Marcin Spoczynski\nGUI Design: Philippe Carpentier\nIcons: Thomas Blatt\n"
 #define APP_COPYRIGHT "Free to use and distribute"

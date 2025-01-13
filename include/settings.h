@@ -19,6 +19,7 @@ extern const struct APISettings DEFAULT_SETTINGS;
 #define ENV_AUTOSTART "autostart"
 #define ENV_ICONIFY_AMIGAAMP "iconify_amigaamp"
 #define ENV_QUIT_AMIGAAMP "quit_amigaamp"
+#define ENV_HTTPS "https_only"
 #define MAX_PATH_LEN 256
 #define PLS_HEADER "[playlist]\n"
 #define PLS_NUMBER_OF_ENTRIES "NumberOfEntries=%d\n"

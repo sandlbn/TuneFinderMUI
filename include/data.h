@@ -13,6 +13,7 @@ struct APISettings {
     LONG countryCode;
     LONG codec;
     BOOL quitAmigaAMP;
+    BOOL httpsOnly;
 };
 
 struct SearchParams {
