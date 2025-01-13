@@ -33,7 +33,7 @@ Run Install_TuneFinder script to install TuneFinderMUI to your system.
 - Double click a station or use the play button to start playback in AmigaAMP
 - Use the Fav+ button to add stations to favorites
 - Use the Save button to save stations as PLS files
-- Access settings through Project -> Settings menu
+- Access settings through Project -> Settings menu or System virtual group
 
 ## Configuration
 

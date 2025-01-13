@@ -50,3 +50,8 @@ TuneFinderMUI 0.3 beta (27.12.2024)
 TuneFinderMUI 0.4 beta (1.01.2024)
 
 - Reorganize interface layout
+
+TuneFinderMUI 0.6 beta (12.01.2024)
+
+- Configurable HTTPS streams filter with state persistence
+- Number of small fixes
