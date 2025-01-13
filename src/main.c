@@ -262,6 +262,7 @@ int main(void) {
   int result = RETURN_FAIL;
   struct APISettings settings;
   LONG country, codec;
+  ULONG httpsOnly;
 
     if (!InitLocaleSystem()) {
         DEBUG("%s", "Warning: Failed to initialize locale system\n");
@@ -424,10 +425,12 @@ int main(void) {
     if (objApp && objApp->WIN_Main) {
         get(objApp->CYC_Find_Country, MUIA_Cycle_Active, &country);
         get(objApp->CYC_Find_Codec, MUIA_Cycle_Active, &codec);
+        get(objApp->CHK_Find_HTTPS_Only, MUIA_Selected, &httpsOnly);
     }
   if (LoadSettings(&settings)) {     
      settings.countryCode = country;
      settings.codec = codec;
+     settings.httpsOnly = httpsOnly;
 
     DEBUG("Country: %ld", country);
 

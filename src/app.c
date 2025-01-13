@@ -263,6 +263,7 @@ BOOL APP_Settings_Init(void)
         set(objApp->CYC_Find_Country, MUIA_Cycle_Active, settings.countryCode);
         set(objApp->CYC_Find_Codec, MUIA_Cycle_Active, settings.codec);
         set(objApp->CHK_Settings_QuitAmigaAMP, MUIA_Selected, settings.quitAmigaAMP);
+        set(objApp->CHK_Find_HTTPS_Only, MUIA_Selected, settings.httpsOnly);
 
         if (!APP_StartupAmigaAMP(&settings)) {
             DEBUG("Warning: Failed to start AmigaAMP");
@@ -620,6 +621,11 @@ BOOL APP_Settings_Save(void)
     get(objApp->CYC_Find_Codec, MUIA_Cycle_Active, &tempLong);
     settings.codec = tempLong;
 
+    // Get https only
+
+    get(objApp->CHK_Find_HTTPS_Only, MUIA_Selected, &tempLong);
+    settings.httpsOnly = (BOOL)tempLong;
+
     // Debug output of all settings before saving
     DEBUG("Saving settings:");
     DEBUG("Host: %s", settings.host);
@@ -629,12 +635,12 @@ BOOL APP_Settings_Save(void)
     DEBUG("Iconify: %d", settings.iconifyAmigaAMP);
     DEBUG("Country: %ld", settings.countryCode);
     DEBUG("Codec: %ld", settings.codec);
-
+    DEBUG("HTTPS ONLY: %ld", settings.httpsOnly);
     if (SaveSettings(&settings))
     {
         set(objApp->WIN_Settings, MUIA_Window_Open, FALSE);
         char buf[256];
-        GetTFFormattedString(buf, sizeof(buf), MSG_STATUS_SETTINGS_SAVED_HOST, 
+        GetTFFormattedString(buf, sizeof(buf), MSG_STATUS_SETTINGS_SAVED, 
                             settings.host, settings.port);
         set(objApp->LAB_Tune_Result, MUIA_Text_Contents, buf);
         return TRUE;

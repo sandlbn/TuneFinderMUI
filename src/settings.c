@@ -116,7 +116,13 @@ BOOL SaveSettings(const struct APISettings *settings) {
         Close(file);
         DEBUG("Saved codec: %ld", (LONG)settings->codec);
     }
-
+    // Save HTTPS setting
+    sprintf(filepath, TUNEFINDER_DIR ENV_HTTPS);
+    file = Open(filepath, MODE_NEWFILE);
+    if (file) {
+        FPutC(file, settings->httpsOnly ? '1' : '0');
+        Close(file);
+    }
     return TRUE;
 }
 
@@ -133,6 +139,7 @@ BOOL LoadSettings(struct APISettings *settings) {
     settings->iconifyAmigaAMP = FALSE;
     settings->countryCode = 0;
     settings->codec = 0;
+    settings->httpsOnly = FALSE;
 
 
     // Load host
@@ -268,6 +275,17 @@ BOOL LoadSettings(struct APISettings *settings) {
     }
     Close(file);
     }
-
+    // Load HTTPS setting
+    sprintf(filepath, TUNEFINDER_DIR ENV_HTTPS);
+    file = Open(filepath, MODE_OLDFILE);
+    if (file) {
+        char value;
+        if (Read(file, &value, 1) == 1) {
+            settings->httpsOnly = (value == '1');
+        }
+        Close(file);
+    } else {
+        settings->httpsOnly = FALSE;  // Default to false
+    }
     return TRUE;
 }
