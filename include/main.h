@@ -31,8 +31,8 @@
 
 // Application defines
 #define APP_NAME "TuneFinder MUI"
-#define APP_DATE "12.01.2025"
-#define APP_VERSION "0.6-beta"
+#define APP_DATE "20.04.2025"
+#define APP_VERSION "0.7-beta"
 #define APP_VERSTRING "$VER: " APP_NAME " " APP_VERSION " (" APP_DATE ")"
 #define APP_AUTHORS "Coding: Marcin Spoczynski\nGUI Design: Philippe Carpentier\nIcons: Thomas Blatt\n"
 #define APP_COPYRIGHT "Free to use and distribute"
@@ -48,7 +48,7 @@
 // API Settings
 #define API_HOST_ACCEPT \
   "0123456789abcdefghijklmnopqrstuvwxyz:/?#[]@!$&'()*+,;=%-_.~"
-#define API_HOST_DEFAULT "de1.api.radio-browser.info"
+#define API_HOST_DEFAULT "de2.api.radio-browser.info"
 #define API_HOST_MAX_LEN (1024)
 
 #define API_PORT_ACCEPT "0123456789"
