@@ -25,7 +25,8 @@ const struct APISettings DEFAULT_SETTINGS = {
     FALSE,            // iconifyAmigaAMP
     0,                // countryCode
     0,                // codec
-    TRUE            // exit AmigaAmp true as it is default option
+    TRUE,            // exit AmigaAmp true as it is default option
+    FALSE
 
 };
 
