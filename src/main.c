@@ -371,6 +371,9 @@ int main(void) {
             case EVENT_SETTINGS_CANCEL:
               APP_Settings_Cancel();
               break;  
+            case EVENT_SETTINGS_NEXT_SERVER:
+              APP_Settings_Next_Server();
+              break;
             case EVENT_SETTINGS_BROWSE_AMIGAAMP: {
             struct FileRequester *req;
             char path[256];

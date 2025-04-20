@@ -25,6 +25,7 @@ enum {
     MSG_ACTION_STOP,
     MSG_ACTION_FAV_ADD,
     MSG_ACTION_FAV_REMOVE,
+    MSG_ACTION_SAVE,
 
     // GUI States (20-29)
     MSG_STATE_READY = 20,
@@ -134,7 +135,8 @@ enum {
     MSG_ASLREQ_SELECT_AMIGAAMP = 140,   // "Select AmigaAmp executable"
     MSG_STATUS_SEARCH_RESULT = 141,      // "Found %ld tune(s), in %lu second(s) [Limit: %lu]"
     MSG_STATUS_ALREADY_FAV = 142,    // "Station already in favorites"
-    MSG_STATUS_NOT_IN_FAV = 143     // "Station not in favorites"
+    MSG_STATUS_NOT_IN_FAV = 143,     // "Station not in favorites"
+    EVENT_SETTINGS_NEXT_SERVER = 200
 
 };
 

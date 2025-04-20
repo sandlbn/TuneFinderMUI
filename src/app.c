@@ -31,6 +31,7 @@
 #include "../include/locale.h"
 #include "../include/utils.h"
 #include "../include/amigaamp.h"
+#include "../include/network.h"
 #include "../include/countries.h"
 #include "../include/country_config.h"
 #include "../include/settings.h"
@@ -969,7 +970,7 @@ void CreateWindowSettings(struct ObjApp *obj) {
   APTR group0, group1, group2;
 
   // Controls
-    obj->BTN_Settings_Save = SimpleButton(GetTFString(MSG_ACTION_SAVE_ALL));     // "Save"
+    obj->BTN_Settings_Save = SimpleButton(GetTFString(MSG_ACTION_SAVE));     // "Save"
     obj->BTN_Settings_Cancel = SimpleButton(GetTFString(MSG_ACTION_CANCEL));     // "Cancel"
 
   obj->STR_Settings_AmigaAmp = StringObject,
@@ -1008,6 +1009,7 @@ void CreateWindowSettings(struct ObjApp *obj) {
   MUIA_String_Format, MUIV_String_Format_Left, MUIA_String_MaxLen,
   API_HOST_MAX_LEN, MUIA_String_Contents, API_HOST_DEFAULT, 
   MUIA_FixWidthTxt, "wwwwwwwwwwwwwwwwwwwwwwwwww", End;
+  obj->BTN_Settings_API_Next_Server = SimpleButton("Next Server");
 
   // Port (Integer 0 to 65535)
   obj->STR_Settings_API_Port = StringObject, MUIA_Frame, MUIV_Frame_String,
@@ -1055,7 +1057,10 @@ void CreateWindowSettings(struct ObjApp *obj) {
         MUIA_Frame, MUIV_Frame_Group,
         MUIA_HorizWeight, 200, 
         Child, Label(GetTFString(MSG_OPTION_API_HOST)),
-        Child, obj->STR_Settings_API_Host,
+        Child, HGroup,
+            Child, obj->STR_Settings_API_Host,
+            Child, obj->BTN_Settings_API_Next_Server,
+        End,
         Child, Label(GetTFString(MSG_OPTION_API_PORT)),
         Child, child1,
         Child, Label(GetTFString(MSG_GUI_LIMIT)), 
@@ -1128,7 +1133,8 @@ void CreateWindowSettingsEvents(struct ObjApp *obj) {
   //
     DoMethod(obj->BTN_Settings_AmigaAmp_Browse, MUIM_Notify, MUIA_Pressed, FALSE,
   obj->App, 2, MUIM_Application_ReturnID, EVENT_SETTINGS_BROWSE_AMIGAAMP);
-
+    DoMethod(obj->BTN_Settings_API_Next_Server, MUIM_Notify, MUIA_Pressed, FALSE,
+            obj->App, 2, MUIM_Application_ReturnID, EVENT_SETTINGS_NEXT_SERVER);
   // Window
   DoMethod(obj->WIN_Settings, MUIM_Notify, MUIA_Window_CloseRequest, TRUE,
            obj->App, 2, MUIM_Application_ReturnID, EVENT_SETTINGS_CANCEL);
@@ -1243,6 +1249,18 @@ BOOL APP_ShowFavorites(void)
     {
         set(objApp->LAB_Tune_Result, MUIA_Text_Contents,GetTFString(MSG_STATUS_NO_FAVORITES));
     }
+    
+    return TRUE;
+}
+
+BOOL APP_Settings_Next_Server(void) {
+    DEBUG("%s", "APP_Settings_Next_Server()\n");
+    
+    // Get the next server
+    const char *server = GetNextAPIServer();
+    
+    // Update the host field
+    set(objApp->STR_Settings_API_Host, MUIA_String_Contents, server);
     
     return TRUE;
 }

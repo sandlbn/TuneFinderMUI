@@ -153,6 +153,8 @@ struct ObjApp {
   APTR STR_Settings_AmigaAmp;   // String for AmigaAmp path
   APTR CHK_Settings_Iconify;     // Checkbox for iconify option
   APTR CHK_Settings_QuitAmigaAMP;
+  APTR BTN_Settings_API_Next_Server;
+  APTR TXT_Settings_Current_Server;
   struct CountryConfig countryConfig;
 
 };

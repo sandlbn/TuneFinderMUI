@@ -562,10 +562,7 @@ BOOL GetAPIServerList(void) {
   host = gethostbyname("all.api.radio-browser.info");
 
   if (host && host -> h_addr_list && host -> h_addr_list[0]) {
-    // We found the list of servers via DNS lookup
-    // These are actually the hostnames we should use directly
-
-    // In this case, we want to replace our default servers
+    // replace default servers
     g_serverList.count = 0;
 
     for (i = 0; i < MAX_API_SERVERS; i++) {
@@ -602,8 +599,6 @@ BOOL GetAPIServerList(void) {
   Permit();
 
   if (g_serverList.count == 0) {
-    // If we couldn't find any servers via DNS, use our defaults
-    // (But we should already have defaults set)
     DEBUG("DNS lookup failed or no servers found, using defaults");
     AddDefaultServer("de1.api.radio-browser.info");
     AddDefaultServer("fi1.api.radio-browser.info");

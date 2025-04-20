@@ -3,6 +3,7 @@
 
 #include "data.h"
 #include "main.h"
+#include "settings.h"
 
 
 #define API_ENDPOINT "/json/stations/search"
@@ -12,7 +13,6 @@
 #define PREFERRED_BUFFER_SIZE (2 * 1024 * 1024) // 2MB preferred
 #define READ_CHUNK_SIZE (8 * 1024)         // Read 8KB at a time
 #define MAX_API_SERVERS 10
-#define MAX_HOST_LEN 200
 struct APIServerList {
     char servers[MAX_API_SERVERS][MAX_HOST_LEN];
     int count;

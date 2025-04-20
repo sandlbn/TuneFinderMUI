@@ -36,7 +36,7 @@ static const char *built_in_strings[] = {
     "Stop Tune",    // 16
     "Add",         // 17
     "Delete",         // 18
-    NULL,           // 19
+    "Save",           // 19
 
     // GUI States (20-28)
     "Ready",        // 20
