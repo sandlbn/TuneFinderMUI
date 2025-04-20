@@ -3,6 +3,8 @@
 
 #include "data.h"
 #include "main.h"
+#include "settings.h"
+
 
 #define API_ENDPOINT "/json/stations/search"
 #define MAX_URL_LENGTH 2048
@@ -10,6 +12,14 @@
 #define MAX_BUFFER_SIZE (64 * 1024 * 1024) // 4MB maximum
 #define PREFERRED_BUFFER_SIZE (2 * 1024 * 1024) // 2MB preferred
 #define READ_CHUNK_SIZE (8 * 1024)         // Read 8KB at a time
+#define MAX_API_SERVERS 10
+struct APIServerList {
+    char servers[MAX_API_SERVERS][MAX_HOST_LEN];
+    int count;
+    int current;
+    BOOL initialized;
+};
+static struct APIServerList g_serverList = {{{0}}, 0, 0, FALSE};
 
 enum {
     HTTPS_ALL = 0,   // Any stations
@@ -28,6 +38,8 @@ struct Tune *SearchStations(const struct APISettings *settings,
                                   const struct SearchParams *params,
                                   LONG *count);
 void UpdateStatusMessage(const char *msg);
-
+BOOL GetAPIServerList(void);
+const char *GetNextAPIServer(void);
+const char *GetCurrentAPIServer(void);
 
 #endif /* NETWORK_H */

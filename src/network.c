@@ -18,38 +18,85 @@ struct ObjApp *objApp;
 struct Library *SocketBase;
 
 
-struct Tune *SearchStations(const struct APISettings *settings, 
-                          const struct SearchParams *params,
-                          LONG *count)
-{
-    char *url = NULL;
-    char *response = NULL;
-    struct Tune *tunes = NULL;
-    *count = 0;
+struct Tune * SearchStations(const struct APISettings * settings,
+  const struct SearchParams * params,
+    LONG * count) {
+  char * url = NULL;
+  char * response = NULL;
+  struct Tune * tunes = NULL;
+  struct APISettings tempSettings;
+  int retries = 0;
+  const int MAX_RETRIES = 3; // Try up to 3 different servers
 
-    url = build_search_url(settings, params);
+  // Small safety check
+  if (!settings || !params || !count) {
+    DEBUG("Invalid parameters to SearchStations");
+    return NULL;
+  }
+
+  * count = 0;
+
+  // Make a copy of settings so we can modify the host
+  memcpy( & tempSettings, settings, sizeof(struct APISettings));
+
+  // Get the current server
+  const char * currentServer = GetCurrentAPIServer();
+  if (currentServer && * currentServer) {
+    strncpy(tempSettings.host, currentServer, sizeof(tempSettings.host) - 1);
+    tempSettings.host[sizeof(tempSettings.host) - 1] = '\0';
+  }
+  // If GetCurrentAPIServer failed, let us use the original settings
+  while (retries < MAX_RETRIES) {
+    DEBUG("Trying server: %s (attempt %d)", tempSettings.host, retries + 1);
+    UpdateStatusMessage(GetTFString(MSG_SEARCHING));
+
+    url = build_search_url( & tempSettings, params);
     if (!url) {
-        UpdateStatusMessage(GetTFString(MSG_FAILED_CREATE_REQUEST));
-        return NULL;
+      UpdateStatusMessage(GetTFString(MSG_FAILED_CREATE_REQUEST));
+      // Try next server
+      const char * nextServer = GetNextAPIServer();
+      if (nextServer && * nextServer) {
+        strncpy(tempSettings.host, nextServer, sizeof(tempSettings.host) - 1);
+        tempSettings.host[sizeof(tempSettings.host) - 1] = '\0';
+      }
+      retries++;
+      continue;
     }
-
-    response = make_http_request(settings, url);
+    response = make_http_request( & tempSettings, url);
     free(url);
-
     if (!response) {
-        UpdateStatusMessage(GetTFString(MSG_FAILED_HTTP_REQ));
-        return NULL;
+      UpdateStatusMessage(GetTFString(MSG_FAILED_HTTP_REQ));
+      // Try next server
+      const char * nextServer = GetNextAPIServer();
+      if (nextServer && * nextServer) {
+        strncpy(tempSettings.host, nextServer, sizeof(tempSettings.host) - 1);
+        tempSettings.host[sizeof(tempSettings.host) - 1] = '\0';
+      }
+      retries++;
+      continue;
     }
-
     tunes = parse_stations_json(response, count);
     free(response);
 
-    if (!tunes) {
-        UpdateStatusMessage(GetTFString(MSG_FAILED_PARSE_RESP));
-        return NULL;
+    if (!tunes || * count == 0) {
+      UpdateStatusMessage(GetTFString(MSG_FAILED_PARSE_RESP));
+      // Try next server
+      const char * nextServer = GetNextAPIServer();
+      if (nextServer && * nextServer) {
+        strncpy(tempSettings.host, nextServer, sizeof(tempSettings.host) - 1);
+        tempSettings.host[sizeof(tempSettings.host) - 1] = '\0';
+      }
+      retries++;
+      continue;
     }
 
+    // Success!
     return tunes;
+  }
+
+  // All retries failed
+  UpdateStatusMessage("Failed after trying multiple servers");
+  return NULL;
 }
 
 BOOL InitNetworkSystem(void)
@@ -71,6 +118,11 @@ BOOL InitNetworkSystem(void)
         CloseLibrary(SocketBase);
         SocketBase = NULL;
         return FALSE;
+    }
+    // Initialize the API server list
+    if (!GetAPIServerList()) {
+        DEBUG("Warning: Failed to get API server list, using defaults\n");
+        // Continue anyway with defaults
     }
 
     DEBUG("Network system initialized\n");
@@ -479,4 +531,113 @@ struct Tune *parse_stations_json(const char *json_str, int *count)
 
     json_object_put(root);
     return tunes;
+}
+// Function to add a default server to the list
+static void AddDefaultServer(const char *server) {
+    if (g_serverList.count < MAX_API_SERVERS) {
+        strncpy(g_serverList.servers[g_serverList.count], server, MAX_HOST_LEN-1);
+        g_serverList.servers[g_serverList.count][MAX_HOST_LEN-1] = '\0';
+        g_serverList.count++;
+    }
+}
+// Function to get the list of available API servers via DNS lookup
+BOOL GetAPIServerList(void) {
+  struct hostent * host = NULL;
+  int i;
+
+  DEBUG("Performing DNS lookup for all.api.radio-browser.info");
+
+  // Reset server list
+  memset( & g_serverList, 0, sizeof(g_serverList));
+  g_serverList.initialized = FALSE;
+
+  // Add default servers first so we have fallbacks
+  AddDefaultServer("de1.api.radio-browser.info");
+  AddDefaultServer("fi1.api.radio-browser.info");
+  AddDefaultServer("de2.api.radio-browser.info");
+  AddDefaultServer("at1.api.radio-browser.info");
+
+  // Now try DNS lookup to get the dynamic list
+  Forbid();
+  host = gethostbyname("all.api.radio-browser.info");
+
+  if (host && host -> h_addr_list && host -> h_addr_list[0]) {
+    // replace default servers
+    g_serverList.count = 0;
+
+    for (i = 0; i < MAX_API_SERVERS; i++) {
+      // Try to do a DNS lookup for each country code
+      char hostname[MAX_HOST_LEN];
+      struct hostent * country_host;
+
+      // Try different country codes
+      const char * country_codes[] = {
+        "de1",
+        "fi1",
+        "nl1",
+        "at1",
+        "uk1",
+        "us1"
+      };
+
+      if (i >= sizeof(country_codes) / sizeof(country_codes[0]))
+        break;
+
+      snprintf(hostname, sizeof(hostname), "%s.api.radio-browser.info",
+        country_codes[i]);
+
+      country_host = gethostbyname(hostname);
+      if (country_host && country_host -> h_addr) {
+        // This hostname is valid
+        strncpy(g_serverList.servers[g_serverList.count], hostname, MAX_HOST_LEN - 1);
+        g_serverList.servers[g_serverList.count][MAX_HOST_LEN - 1] = '\0';
+        g_serverList.count++;
+        DEBUG("Added server %d: %s", g_serverList.count - 1, hostname);
+      }
+    }
+  }
+  Permit();
+
+  if (g_serverList.count == 0) {
+    DEBUG("DNS lookup failed or no servers found, using defaults");
+    AddDefaultServer("de1.api.radio-browser.info");
+    AddDefaultServer("fi1.api.radio-browser.info");
+  }
+
+  g_serverList.current = 0;
+  g_serverList.initialized = TRUE;
+
+  DEBUG("Server list initialized with %d servers", g_serverList.count);
+  return (g_serverList.count > 0);
+}
+
+// Function to get the next server in the list
+const char * GetNextAPIServer(void) {
+  if (!g_serverList.initialized || g_serverList.count == 0) {
+    GetAPIServerList();
+  }
+
+  if (g_serverList.count == 0) {
+    // Still no servers? Return a safe default
+    return "de1.api.radio-browser.info";
+  }
+
+  // Move to next server
+  g_serverList.current = (g_serverList.current + 1) % g_serverList.count;
+
+  return g_serverList.servers[g_serverList.current];
+}
+
+// Function to get the current server
+const char * GetCurrentAPIServer(void) {
+  if (!g_serverList.initialized || g_serverList.count == 0) {
+    GetAPIServerList();
+  }
+
+  if (g_serverList.count == 0) {
+    // Still no servers? Return a safe default
+    return "de1.api.radio-browser.info";
+  }
+
+  return g_serverList.servers[g_serverList.current];
 }
