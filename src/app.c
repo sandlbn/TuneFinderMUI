@@ -412,6 +412,7 @@ BOOL APP_Tune_Play(void)
 {
     LONG index;
     struct Tune *tune = NULL;
+    char *trackInfo = NULL;
     
     DEBUG("APP_Tune_Play()\n");
     get(objApp->LSV_Tune_List, MUIA_List_Active, &index);
@@ -435,6 +436,11 @@ BOOL APP_Tune_Play(void)
                 GetTFFormattedString(buffer, sizeof(buffer), 
                     MSG_STATUS_PLAYING, tune->name);
                 set(objApp->LAB_Tune_Result, MUIA_Text_Contents, buffer);
+                trackInfo = GetTrackInfo();
+                if (trackInfo) {
+                    set(objApp->TXT_Track_Name, MUIA_Text_Contents, trackInfo);
+                    FreeVec(trackInfo);
+                }
                 return TRUE;
             }
             else
@@ -817,6 +823,9 @@ VOID CreateWindowMain(struct ObjApp *obj) {
   obj->LAB_Tune_Result = TextObject, MUIA_Text_PreParse, "\033r",
   MUIA_InnerLeft, 0, MUIA_InnerRight, 0, End;
 
+  obj->TXT_Track_Name = TextObject, MUIA_Background, MUII_WindowBack,
+  MUIA_Text_SetMin, TRUE, MUIA_Weight, 75, End;
+
   obj->TXT_Tune_Name = TextObject, MUIA_Background, MUII_WindowBack,
   MUIA_Text_SetMin, TRUE, MUIA_Weight, 75, End;
 
@@ -870,7 +879,7 @@ group3 = GroupObject,
     MUIA_Frame, MUIV_Frame_Group, 
     MUIA_FrameTitle, GetTFString(MSG_GROUP_TUNE_DETAILS), 
     MUIA_Group_Columns, 2, 
-    Child, HSpace(0),             // Empty space
+    Child, obj->TXT_Track_Name,          // Empty space
     Child, obj->BTN_Tune_Play,    // Play button
     Child, obj->TXT_Tune_Name,
     Child, obj->BTN_Tune_Stop,    // Stop button

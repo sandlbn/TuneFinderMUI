@@ -2,7 +2,7 @@ Short:        Search+play online radio stations (MUI)
 Author:       marcin@spoczynski.com (Marcin Spoczynski)
 Uploader:     marcin@spoczynski.com (Marcin Spoczynski)
 Type:         comm/misc
-Version:      0.7-beta
+Version:      0.8-beta
 Architecture: m68k-amigaos >= 3.0
 Requires:     MUI 3.8+
 Distribution: Aminet
@@ -64,3 +64,7 @@ TuneFinderMUI 0.7 beta (20.04.2025)
 - Added "Next Server" button to manually switch between servers
 - Improved resilience against server outages with multi-server fallback
 - Enhanced error recovery with automatic retries on different servers
+
+TuneFinderMUI 0.8 beta (26.10.2025)
+- Added track info to the main TuneFinder screen
+- Fixed bug with server rotation

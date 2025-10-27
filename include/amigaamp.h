@@ -10,4 +10,5 @@ BOOL OpenStreamInAmigaAMPWithName(const char *streamURL, const char *stationName
 BOOL StopAmigaAMP(void);
 BOOL WaitAndIconifyAmigaAMP(void);
 BOOL SendCommandToAmigaAMP(const char *command);
+char *GetTrackInfo(void);
 #endif
