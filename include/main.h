@@ -31,8 +31,8 @@
 
 // Application defines
 #define APP_NAME "TuneFinder MUI"
-#define APP_DATE "20.04.2025"
-#define APP_VERSION "0.7-beta"
+#define APP_DATE "26.10.2025"
+#define APP_VERSION "0.8-beta"
 #define APP_VERSTRING "$VER: " APP_NAME " " APP_VERSION " (" APP_DATE ")"
 #define APP_AUTHORS "Coding: Marcin Spoczynski\nGUI Design: Philippe Carpentier\nIcons: Thomas Blatt\n"
 #define APP_COPYRIGHT "Free to use and distribute"
@@ -132,11 +132,11 @@ struct ObjApp {
   APTR TXT_Tune_Name;
   APTR TXT_Tune_URL;
   APTR TXT_Tune_Details;
+  APTR TXT_Track_Name;
   APTR BTN_Tune_Play;
   APTR BTN_Tune_Stop;
   APTR BTN_Tune_Save;
   APTR BTN_Favorites;
-
   APTR STR_Settings_API_Host;
   APTR STR_Settings_API_Port;
   APTR BTN_Settings_API_Port_Inc;

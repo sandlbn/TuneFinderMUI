@@ -339,3 +339,134 @@ BOOL WaitAndIconifyAmigaAMP(void) {
     
     return success;
 }
+
+/* Get track information from AmigaAMP
+ * Returns a dynamically allocated string with track info
+ * Caller must free the returned string with FreeVec()
+ * Returns NULL on error
+ */
+char *GetTrackInfo(void) {
+    struct MsgPort *replyPort = NULL;
+    struct MsgPort *amigaampPort = NULL;
+    struct RexxMsg *rexxMsg = NULL;
+    struct Message *reply = NULL;
+    char *trackInfo = NULL;
+    ULONG waitSignal;
+    BOOL success = FALSE;
+    
+    DEBUG("Getting track info from AmigaAMP");
+    
+    /* Check if AmigaAMP is running first */
+    if (!IsAmigaAMPRunning()) {
+        DEBUG("AmigaAMP is not running");
+        return NULL;
+    }
+    
+    /* Create reply port */
+    replyPort = CreateMsgPort();
+    if (!replyPort) {
+        DEBUG("Failed to create reply port");
+        return NULL;
+    }
+    waitSignal = 1L << replyPort->mp_SigBit;
+    
+    Forbid();  /* Prevent task switching */
+    
+    /* Find AmigaAMP port */
+    amigaampPort = FindPort(AMIGAAMP_PORT_NAME);
+    if (!amigaampPort) {
+        DEBUG("AmigaAMP port not found");
+        Permit();
+        DeleteMsgPort(replyPort);
+        return NULL;
+    }
+    
+    /* Create Rexx message */
+    rexxMsg = CreateRexxMsg(replyPort, NULL, AMIGAAMP_PORT_NAME);
+    if (!rexxMsg) {
+        DEBUG("Failed to create RexxMsg");
+        Permit();
+        DeleteMsgPort(replyPort);
+        return NULL;
+    }
+    
+    /* Setup message with GETTRACKINFO command */
+    rexxMsg->rm_Args[0] = (STRPTR)"GETTRACKINFO";
+    rexxMsg->rm_Action = RXCOMM | RXFF_RESULT;  /* Request result string */
+    
+    /* Send message */
+    PutMsg(amigaampPort, (struct Message *)rexxMsg);
+    
+    Permit();  /* Allow task switching again */
+    
+    /* Wait for response with timeout (5 seconds) */
+    ULONG signals = Wait(waitSignal | SIGBREAKF_CTRL_C);
+    
+    if (signals & SIGBREAKF_CTRL_C) {
+        DEBUG("Command canceled by user");
+        goto cleanup;
+    }
+    
+    if (!(signals & waitSignal)) {
+        DEBUG("Timeout waiting for response");
+        goto cleanup;
+    }
+    
+    /* Get response */
+    Forbid();
+    reply = GetMsg(replyPort);
+    Permit();
+    
+    if (!reply) {
+        DEBUG("No response received");
+        goto cleanup;
+    }
+    
+    if (reply != (struct Message *)rexxMsg) {
+        DEBUG("Received unexpected message");
+        if (reply) ReplyMsg(reply);
+        goto cleanup;
+    }
+    
+    /* Check result */
+    if (rexxMsg->rm_Result1 == 0) {
+        /* Success - get the result string */
+        if (rexxMsg->rm_Result2) {
+            STRPTR resultString = (STRPTR)rexxMsg->rm_Result2;
+            ULONG len = strlen(resultString) + 1;
+            
+            /* Allocate memory for track info */
+            trackInfo = AllocVec(len, MEMF_CLEAR);
+            if (trackInfo) {
+                strcpy(trackInfo, resultString);
+                success = TRUE;
+                DEBUG("Track info retrieved: %s", trackInfo);
+            } else {
+                DEBUG("Failed to allocate memory for track info");
+            }
+            
+            /* Free the result string from ARexx */
+            DeleteArgstring((UBYTE *)rexxMsg->rm_Result2);
+        } else {
+            DEBUG("No track info returned");
+        }
+    } else {
+        DEBUG("GETTRACKINFO command failed with error: %ld", rexxMsg->rm_Result1);
+    }
+    
+cleanup:
+    /* Cleanup */
+    if (rexxMsg) {
+        DeleteRexxMsg(rexxMsg);
+    }
+    if (replyPort) {
+        /* Clear any remaining messages */
+        struct Message *msg;
+        while ((msg = GetMsg(replyPort))) {
+            ReplyMsg(msg);
+        }
+        DeleteMsgPort(replyPort);
+    }
+    
+    return trackInfo;
+}

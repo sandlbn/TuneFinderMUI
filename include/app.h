@@ -14,7 +14,7 @@ BOOL APP_Find_Init(void);
 BOOL APP_Tune_List_Init(void);
 BOOL APP_Tune_Details_Init(void);
 BOOL APP_Settings_Init(void);
-
+BOOL APP_Settings_Next_Server(void);
 // Event handlers
 BOOL APP_About(void);
 BOOL APP_About_MUI(void);
