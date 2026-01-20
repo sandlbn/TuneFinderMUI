@@ -2,7 +2,7 @@ Short:        Search+play online radio stations (MUI)
 Author:       marcin@spoczynski.com (Marcin Spoczynski)
 Uploader:     marcin@spoczynski.com (Marcin Spoczynski)
 Type:         comm/misc
-Version:      0.8-beta
+Version:      0.9-beta
 Architecture: m68k-amigaos >= 3.0
 Requires:     MUI 3.8+
 Distribution: Aminet
@@ -70,5 +70,6 @@ TuneFinderMUI 0.8 beta (26.10.2025)
 - Fixed bug with server rotation
 
 TuneFinderMUI 0.9 beta (20.01.2026)
-- Fix JSON parsing: add array type check to prevent crash, use HTTP/1.0 to avoid chunked encoding
+- Fix JSON parsing: add array type check to prevent crash, use HTTP/1.0
+to avoid chunked encoding
 - Fix URL parameters
