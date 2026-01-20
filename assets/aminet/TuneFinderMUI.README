@@ -68,3 +68,7 @@ TuneFinderMUI 0.7 beta (20.04.2025)
 TuneFinderMUI 0.8 beta (26.10.2025)
 - Added track info to the main TuneFinder screen
 - Fixed bug with server rotation
+
+TuneFinderMUI 0.9 beta (20.01.2026)
+- Fix JSON parsing: add array type check to prevent crash, use HTTP/1.0 to avoid chunked encoding
+- Fix URL parameters
