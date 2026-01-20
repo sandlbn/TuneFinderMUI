@@ -184,14 +184,14 @@ char *build_search_url(const struct APISettings *settings,
     if (space_left > 0)
     {
         // Add hidebroken parameter
-        pos += snprintf(url + pos, space_left, "hidebroken=%d&",
-                       params->hidebroken ? 1 : 0);
+        pos += snprintf(url + pos, space_left, "hidebroken=%s&",
+                       params->hidebroken ? "true" : "false");
         space_left = MAX_URL_LENGTH - pos;
         
         // Add HTTPS parameter
-        if (!params->is_https && space_left > 0)
+        if (params->is_https == HTTPS_TRUE && space_left > 0)
         {
-            pos += snprintf(url + pos, space_left, "is_https=false&");
+            pos += snprintf(url + pos, space_left, "is_https=true&");
             space_left = MAX_URL_LENGTH - pos;
         }
         
@@ -242,7 +242,7 @@ char *build_search_url(const struct APISettings *settings,
         // Add limit
         if (space_left > 0)
         {
-            pos += snprintf(url + pos, space_left, "limit=%lu", params->limit);
+            pos += snprintf(url + pos, space_left, "limit=%s", params->limit);
         }
     }
     
@@ -360,7 +360,7 @@ char *make_http_request(const struct APISettings *settings, const char *path) {
 
     // Prepare and send HTTP request
     snprintf(request, sizeof(request),
-             "GET %s HTTP/1.1\r\n"
+             "GET %s HTTP/1.0\r\n"
              "Host: %s\r\n"
              "User-Agent: AmigaRadioBrowser/1.0\r\n"
              "Accept: application/json\r\n"
@@ -487,6 +487,13 @@ struct Tune *parse_stations_json(const char *json_str, int *count)
         return NULL;
     }
 
+    // Check if root is actually an array before calling array functions
+    if (!json_object_is_type(root, json_type_array)) {
+        DEBUG("JSON response is not an array");
+        json_object_put(root);
+        return NULL;
+    }
+
     array_len = json_object_array_length(root);
     if (array_len <= 0) {
         json_object_put(root);
@@ -519,11 +526,11 @@ struct Tune *parse_stations_json(const char *json_str, int *count)
             country = json_object_get_string(country_obj);
             bitrate = json_object_get_int(bitrate_obj);
 
-            tunes[i].name = strdup(name);
-            tunes[i].url = strdup(url);
-            tunes[i].codec = strdup(codec);
-            tunes[i].country = strdup(country);
-            tunes[i].bitrate = bitrate;
+            tunes[*count].name = strdup(name);
+            tunes[*count].url = strdup(url);
+            tunes[*count].codec = strdup(codec);
+            tunes[*count].country = strdup(country);
+            tunes[*count].bitrate = bitrate;
 
             (*count)++;
         }
